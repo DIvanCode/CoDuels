@@ -9,7 +9,98 @@
 - Проверка решения задачи, выдача вердикта тестирования.
 
 ## API
-TODO
+
+### Выдача информации по задаче пользователю
+
+Запрос GET /task/4cf94aac-ae47-459b-bb6a-459784fecc66
+
+Ответ:
+```json
+{
+    "id": "4cf94aac-ae47-459b-bb6a-459784fecc66",
+    "name": "A + B",
+    "level": 1,
+    "statement": "statement.tex",
+    "tl": 1000,
+    "ml": 256,
+    "tests": [
+        {
+            "order": 1,
+            "input": "tests/01.in",
+            "output": "tests/01.out"
+        }
+    ]
+}
+```
+
+### Выдача файла задачи
+
+Запрос GET /task/4cf94aac-ae47-459b-bb6a-459784fecc66/statement.tex
+
+Ответ: файл statement.tex
+
+### Выдача архива с задачей
+
+Происходит с использованием filestorage.
+
+### Запрос на тестирование решения пользователя
+
+Запрос POST /test
+```json
+{
+    "task_id": "4cf94aac-ae47-459b-bb6a-459784fecc66",
+    "submission_id": "1",
+    "solution": "print(sum(map(int, input().split())))",
+    "language": "Python"
+}
+```
+
+Ответ: Status
+
+### События обновления статуса тестирования решения
+
+Тестирование решения началось
+```json
+{
+    "submission_id": "1",
+    "type": "start"
+}
+```
+
+Тестирование решения завершилось
+```json
+{
+    "submission_id": "1",
+    "type": "finish",
+    "verdict": "Accepted" // либо "<вердикт> on test #T", где <вердикт> = ["Time Limit", "Memory Limit", "Wrong Answer", "Runtime Error"]
+}
+```
+Тестирование решения завершилось с ошибкой, нужно показать сообщение пользователю
+```json
+{
+    "submission_id": "1",
+    "type": "finish",
+    "verdict": "Compilation Error",
+    "message": "ошибка компиляции бла-бла-бла"
+}
+```
+Тестирование решения завершилось с ошибкой (техническая ошибка)
+```json
+{
+    "submission_id": "1",
+    "type": "finish",
+    "error": "ошибка"
+}
+```
+
+Тестирование решения в процессе:
+```json
+{
+    "submission_id": "1",
+    "type": "status",
+    "message": "Test #T passed successfully"
+}
+```
 
 ## Схема данных
 TODO
