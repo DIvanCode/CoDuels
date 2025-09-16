@@ -13,7 +13,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Duely.Application.UseCases.Abstracts\Duely.Application.UseCases.Abstracts.csproj" />
       <ProjectReference Include="..\Duely.Domain.Models\Duely.Domain.Models.csproj" />
       <ProjectReference Include="..\Duely.Domain.Services\Duely.Domain.Services.csproj" />
       <ProjectReference Include="..\Duely.Infrastructure.Gateway.Client.Abstracts\Duely.Infrastructure.Gateway.Client.Abstracts.csproj" />

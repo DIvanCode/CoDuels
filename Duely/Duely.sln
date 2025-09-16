@@ -22,8 +22,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Duely.Domain.Models", "src\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Duely.Domain.Services", "src\Duely.Domain.Services\Duely.Domain.Services.csproj", "{2DC6AA4C-C270-45CF-82D3-42D6C48FB1EC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Duely.Application.UseCases.Abstracts", "src\Duely.Application.UseCases.Abstracts\Duely.Application.UseCases.Abstracts.csproj", "{6094364F-CFEE-47D2-A076-14CFDCF54151}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -74,9 +72,5 @@ Global
 		{2DC6AA4C-C270-45CF-82D3-42D6C48FB1EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2DC6AA4C-C270-45CF-82D3-42D6C48FB1EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2DC6AA4C-C270-45CF-82D3-42D6C48FB1EC}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6094364F-CFEE-47D2-A076-14CFDCF54151}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6094364F-CFEE-47D2-A076-14CFDCF54151}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6094364F-CFEE-47D2-A076-14CFDCF54151}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6094364F-CFEE-47D2-A076-14CFDCF54151}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

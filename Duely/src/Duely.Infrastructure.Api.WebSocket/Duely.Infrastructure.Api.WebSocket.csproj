@@ -8,7 +8,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Duely.Application.UseCases.Abstracts\Duely.Application.UseCases.Abstracts.csproj" />
+      <ProjectReference Include="..\Duely.Application.UseCases\Duely.Application.UseCases.csproj" />
       <ProjectReference Include="..\Duely.Infrastructure.Gateway.Client.Abstracts\Duely.Infrastructure.Gateway.Client.Abstracts.csproj" />
     </ItemGroup>
 
