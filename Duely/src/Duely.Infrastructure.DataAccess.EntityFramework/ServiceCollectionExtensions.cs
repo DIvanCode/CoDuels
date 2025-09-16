@@ -1,5 +1,4 @@
-﻿using Duely.Infrastructure.DataAccess.Abstracts;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,8 +12,7 @@ public static class ServiceCollectionExtensions
         var dbConnectionOptions = configuration.GetSection(DbConnectionOptions.SectionName).Get<DbConnectionOptions>();
         ArgumentNullException.ThrowIfNull(dbConnectionOptions, nameof(dbConnectionOptions));
 
-        services.AddScoped<IUnitOfWork, UnitOfWork>();
-        services.AddDbContext<UnitOfWork>(options =>
+        services.AddDbContext<Context>(options =>
         {
             options.UseNpgsql(
                 dbConnectionOptions.ConnectionString,

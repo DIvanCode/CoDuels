@@ -26,7 +26,7 @@ services:
       bash -c '/root/.dotnet/tools/dotnet-ef database update \
         --connection "$$DbConnection__ConnectionString" \
         --startup-project /Source/src/Duely \
-        --project /Source/src/Duely.Adapters.DataAccess.EntityFramework'
+        --project /Source/src/Duely.Infrastructure.DataAccess.EntityFramework'
     depends_on:
       postgres:
         condition: service_healthy

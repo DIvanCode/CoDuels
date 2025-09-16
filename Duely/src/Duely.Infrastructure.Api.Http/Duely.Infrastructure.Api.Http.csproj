@@ -11,4 +11,9 @@
       <ProjectReference Include="..\Duely.Application.UseCases.Abstracts\Duely.Application.UseCases.Abstracts.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.3.0" />
+      <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.4" />
+    </ItemGroup>
+
 </Project>

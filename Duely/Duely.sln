@@ -6,8 +6,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Duely.Application.UseCases"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Duely.Infrastructure.DataAccess.EntityFramework", "src\Duely.Infrastructure.DataAccess.EntityFramework\Duely.Infrastructure.DataAccess.EntityFramework.csproj", "{DC9F8E52-9D2A-4C90-A52B-882755665464}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Duely.Infrastructure.DataAccess.Abstracts", "src\Duely.Infrastructure.DataAccess.Abstracts\Duely.Infrastructure.DataAccess.Abstracts.csproj", "{8B6FBB5F-7E58-49A5-9DFB-AF323E601CA8}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Duely.Infrastructure.MessageBus.Kafka", "src\Duely.Infrastructure.MessageBus.Kafka\Duely.Infrastructure.MessageBus.Kafka.csproj", "{75566A5A-84C0-45D6-9C19-6D81E87BFBAB}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Duely.Infrastructure.Api.Http", "src\Duely.Infrastructure.Api.Http\Duely.Infrastructure.Api.Http.csproj", "{CE44115D-CA10-4283-BA3F-D4599DEA150D}"
@@ -44,10 +42,6 @@ Global
 		{DC9F8E52-9D2A-4C90-A52B-882755665464}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DC9F8E52-9D2A-4C90-A52B-882755665464}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DC9F8E52-9D2A-4C90-A52B-882755665464}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8B6FBB5F-7E58-49A5-9DFB-AF323E601CA8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8B6FBB5F-7E58-49A5-9DFB-AF323E601CA8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8B6FBB5F-7E58-49A5-9DFB-AF323E601CA8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8B6FBB5F-7E58-49A5-9DFB-AF323E601CA8}.Release|Any CPU.Build.0 = Release|Any CPU
 		{75566A5A-84C0-45D6-9C19-6D81E87BFBAB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{75566A5A-84C0-45D6-9C19-6D81E87BFBAB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{75566A5A-84C0-45D6-9C19-6D81E87BFBAB}.Release|Any CPU.ActiveCfg = Release|Any CPU

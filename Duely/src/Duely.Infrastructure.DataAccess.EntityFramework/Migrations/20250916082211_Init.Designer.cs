@@ -10,7 +10,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace Duely.Infrastructure.DataAccess.EntityFramework.Migrations
 {
-    [DbContext(typeof(UnitOfWork))]
+    [DbContext(typeof(Context))]
     [Migration("20250916082211_Init")]
     partial class Init
     {

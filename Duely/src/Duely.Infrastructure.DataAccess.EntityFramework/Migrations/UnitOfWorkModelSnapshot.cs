@@ -9,7 +9,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace Duely.Infrastructure.DataAccess.EntityFramework.Migrations
 {
-    [DbContext(typeof(UnitOfWork))]
+    [DbContext(typeof(Context))]
     partial class UnitOfWorkModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)
