@@ -50,4 +50,4 @@ TODO
 - `duels.task_id` →  **Taski** 
 
 ### Картинка
-диаграмма по [ссылке(специально темная тема:)](https://dbdiagram.io/e/68bb1a3d61a46d388ead2b84/68caa2775779bb7265e3ce14) 
+диаграмма по [ссылке](https://dbdiagram.io/e/68bb1a3d61a46d388ead2b84/68caa2775779bb7265e3ce14) специально темная тема :)
