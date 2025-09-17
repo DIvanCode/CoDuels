@@ -21,38 +21,33 @@ TODO
 
 ## Схема данных
 ### duels
-| Поле          | Тип        | Описание                         |
-|---------------|------------|----------------------------------|
-| id            | serial PK  | id дуэли                         |
-| task_id       | int        | id задачи (внешний, из Taski)    |
-| user1_id      | int        | id первого участника             |
-| user2_id      | int        | id второго участника             |
-| status        | boolean    | Признак завершения дуэли         |
-| result        | varchar    | Результат: draw / user1 / user2  |
-| start_time    | timestamp  | Время начала                     |
-| end_time      | timestamp  | Время окончания                  |
+| Поле          | Тип        | Описание                             |
+|---------------|------------|--------------------------------------|
+| id            | serial PK  | id дуэли                             |
+| task_id       | int        | id задачи (внешний, из Taski)        |
+| user1_id      | int        | id первого участника                 |
+| user2_id      | int        | id второго участника                 |
+| status        | boolean    | Признак завершения дуэли             |
+| result        | varchar    | Результат: draw / user1 / user2      |
+| max_duration  | interval   | Макс. продолжительность(дефол 30)    |
+| start_time    | timestamp  | Время начала                         |
+| end_time      | timestamp  | Время окончания                      |
 
 ### submissions
-| Поле        | Тип        | Описание                              |
-|-------------|------------|---------------------------------------|
-| id          | serial PK  | id посылки                            |
-| duel_id     | int FK     | Ссылка на дуэль                       |
-| user_id     | int        | id пользователя (user_id)             |
-| code        | text       | Код решения                           |
-| language    | varchar    | Язык                                  |
-| submit_time | timestamp  | Время отправки                        |
-| status      | varchar    | queued / running / OK / Fail          |
-
-### waiting_pool (пользователь, который ожидает дуэль)
-| Поле      | Тип        | Описание                              |
-|-----------|------------|---------------------------------------|
-| user_id   | int PK     | Пользователь в пуле ожидания          |
-| queued_at | timestamp  | Когда попал в пул                     |
+| Поле        | Тип        | Описание                               |
+|-------------|------------|----------------------------------------|
+| id          | serial PK  | id посылки                             |
+| duel_id     | int FK     | Ссылка на дуэль                        |
+| user_id     | int        | id пользователя (user_id)              |
+| code        | text       | Код решения                            |
+| language    | varchar    | Язык                                   |
+| submit_time | timestamp  | Время отправки                         |
+| status      | varchar    | queued / running / done                |
+| verdict     | varchar    | OK/TLE/WA                              |
 
 ### связи
-- **duels** ──< **submissions** (одна дуэль содержит многопосылок)
-- `duels.task_id` →  **Taski**
-- **waiting_pool.user_id** — список участников, ожидающих соперника
+- **duels** ──< **submissions** (одна дуэль содержит много посылок)
+- `duels.task_id` →  **Taski** 
 
 ### Картинка
 диаграмма по [ссылке](https://dbdiagram.io/d/68bb1a3d61a46d388ead2b84) 
