@@ -24,14 +24,15 @@ TODO
 | Поле          | Тип        | Описание                             |
 |---------------|------------|--------------------------------------|
 | id            | serial PK  | id дуэли                             |
-| task_id       | int        | id задачи (внешний, из Taski)        |
+| task_id       | text       | id задачи (внешний, из Taski)        |
 | user1_id      | int        | id первого участника                 |
 | user2_id      | int        | id второго участника                 |
-| status        | boolean    | Признак завершения дуэли             |
-| result        | varchar    | Результат: draw / user1 / user2      |
+| status        | text       | Признак завершения дуэли             |
+| result        | varchar(8) | Результат: draw / user1 / user2      |
 | max_duration  | interval   | Макс. продолжительность(дефол 30)    |
 | start_time    | timestamp  | Время начала                         |
 | end_time      | timestamp  | Время окончания                      |
+
 
 ### submissions
 | Поле        | Тип        | Описание                               |
@@ -40,10 +41,10 @@ TODO
 | duel_id     | int FK     | Ссылка на дуэль                        |
 | user_id     | int        | id пользователя (user_id)              |
 | code        | text       | Код решения                            |
-| language    | varchar    | Язык                                   |
+| language    | text       | Язык                                   |
 | submit_time | timestamp  | Время отправки                         |
-| status      | varchar    | queued / running / done                |
-| verdict     | varchar    | OK/TLE/WA                              |
+| status      | text       | queued / running / done                |
+| verdict     | text       | OK/TLE/WA                              |
 
 ### связи
 - **duels** ──< **submissions** (одна дуэль содержит много посылок)
