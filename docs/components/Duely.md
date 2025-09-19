@@ -47,9 +47,6 @@ ws://localhost:5001/ws?user_id=1
 {
     "type": "duel_started",
     "duel_id": "123",
-    "task_id": "4cf94aac-ae47-459b-bb6a-459784fecc66",
-    "starts_at": "2025-09-16T00:25:00Z",
-    "deadline_at": "2025-09-16T00:55:00Z"
 }
 ```
 
@@ -57,9 +54,7 @@ ws://localhost:5001/ws?user_id=1
 ```json
 {
     "type": "submisson_received",
-    "submission_id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
-    "status": "queued",
-    "created_at": "2025-09-17T14:05:00Z" 
+    "submission_id": "f47ac10b-58cc-4372-a567-0e02b2c3d479", 
 }
 ```
 
@@ -70,17 +65,15 @@ ws://localhost:5001/ws?user_id=1
 {
     "type": "submisson_update",
     "submission_id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
-    "status": "running",
-    "verdict": "Test #2 passed",
+    "status": "Test #2 passed"
 }
 ```
 
 Финальный вердикт
 ```json
 {
-    "type": "submisson_update",
+    "type": "submisson_verdict",
     "submission_id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
-    "status": "finished",
     "verdict": "Accepted", // Или "Wrong Answer on test #3", "Time Limit Exceeded", "Compilation Error"
 }
 ```
@@ -89,7 +82,6 @@ ws://localhost:5001/ws?user_id=1
 ```json
 {
     "type": "duel_finished",
-    "duel_id": "123",
     "winner": "1", // Или "2", "draw"
 }
 ```
