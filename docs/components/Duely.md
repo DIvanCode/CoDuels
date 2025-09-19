@@ -36,7 +36,6 @@ ws://localhost:5001/ws?user_id=1
     "submission_id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
     "solution": "print(sum(map(int, input().split())))",
     "language": "Python",
-    "created_at": "2025-09-17T14:12:00Z"
 }
 ```
 
