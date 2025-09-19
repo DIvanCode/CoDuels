@@ -188,4 +188,35 @@ GET /api/duels/{duel_id}/submissions/{submission_id}
 ```
 
 ## Схема данных
-TODO
+### duels
+| Поле          | Тип        | Описание                             |
+|---------------|------------|--------------------------------------|
+| id            | serial PK  | id дуэли                             |
+| task_id       | text       | id задачи (внешний, из Taski)        |
+| user1_id      | int        | id первого участника                 |
+| user2_id      | int        | id второго участника                 |
+| status        | text       | Признак завершения дуэли             |
+| result        | varchar(8) | Результат: draw / user1 / user2      |
+| max_duration  | interval   | Макс. продолжительность(дефол 30)    |
+| start_time    | timestamp  | Время начала                         |
+| end_time      | timestamp  | Время окончания                      |
+
+
+### submissions
+| Поле        | Тип        | Описание                               |
+|-------------|------------|----------------------------------------|
+| id          | serial PK  | id посылки                             |
+| duel_id     | int FK     | Ссылка на дуэль                        |
+| user_id     | int        | id пользователя (user_id)              |
+| code        | text       | Код решения                            |
+| language    | text       | Язык                                   |
+| submit_time | timestamp  | Время отправки                         |
+| status      | text       | queued / running / done                |
+| verdict     | text       | OK/TLE/WA                              |
+
+### связи
+- **duels** ──< **submissions** (одна дуэль содержит много посылок)
+- `duels.task_id` →  **Taski** 
+
+### Картинка
+диаграмма по [ссылке](https://dbdiagram.io/e/68bb1a3d61a46d388ead2b84/68caa2775779bb7265e3ce14) специально темная тема :)
