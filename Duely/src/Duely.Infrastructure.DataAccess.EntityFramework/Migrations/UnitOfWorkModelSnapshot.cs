@@ -30,36 +30,46 @@ namespace Duely.Infrastructure.DataAccess.EntityFramework.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTime>("EndTime")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<DateTime?>("EndTime")
+                        .HasColumnType("timestamp")
+                        .HasColumnName("EndTime");
 
                     b.Property<int>("MaxDuration")
-                        .HasColumnType("integer");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(30)
+                        .HasColumnName("MaxDuration");
 
                     b.Property<string>("Result")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("Result");
 
                     b.Property<DateTime>("StartTime")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp")
+                        .HasColumnName("StartTime");
 
                     b.Property<string>("Status")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("Status");
 
                     b.Property<string>("TaskId")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("TaskId");
 
                     b.Property<int>("User1Id")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("User1Id");
 
                     b.Property<int>("User2Id")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("User2Id");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Duels");
+                    b.ToTable("Duel", (string)null);
                 });
 
             modelBuilder.Entity("Duely.Domain.Models.Submission", b =>
@@ -72,50 +82,51 @@ namespace Duely.Infrastructure.DataAccess.EntityFramework.Migrations
 
                     b.Property<string>("Code")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("Code");
 
                     b.Property<int>("DuelId")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("DuelId");
 
                     b.Property<string>("Language")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("Language");
 
                     b.Property<string>("Status")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("Status");
 
                     b.Property<DateTime>("SubmitTime")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp")
+                        .HasColumnName("SubmitTime");
 
                     b.Property<int>("UserId")
-                        .HasColumnType("integer");
+                        .HasColumnType("integer")
+                        .HasColumnName("UserId");
 
                     b.Property<string>("Verdict")
-                        .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("Verdict");
 
                     b.HasKey("Id");
 
                     b.HasIndex("DuelId");
 
-                    b.ToTable("Submissions");
+                    b.ToTable("Submissions", (string)null);
                 });
 
             modelBuilder.Entity("Duely.Domain.Models.Submission", b =>
                 {
                     b.HasOne("Duely.Domain.Models.Duel", "Duel")
-                        .WithMany("Submissions")
+                        .WithMany()
                         .HasForeignKey("DuelId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Duel");
-                });
-
-            modelBuilder.Entity("Duely.Domain.Models.Duel", b =>
-                {
-                    b.Navigation("Submissions");
                 });
 #pragma warning restore 612, 618
         }

@@ -7,13 +7,13 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Duely.Infrastructure.DataAccess.EntityFramework.Migrations
 {
     /// <inheritdoc />
-    public partial class InitDuelySchema : Migration
+    public partial class AddDuelySchema : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "Duels",
+                name: "Duel",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "integer", nullable: false)
@@ -23,13 +23,13 @@ namespace Duely.Infrastructure.DataAccess.EntityFramework.Migrations
                     User2Id = table.Column<int>(type: "integer", nullable: false),
                     Status = table.Column<string>(type: "text", nullable: false),
                     Result = table.Column<string>(type: "text", nullable: false),
-                    StartTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    EndTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    MaxDuration = table.Column<int>(type: "integer", nullable: false)
+                    StartTime = table.Column<DateTime>(type: "timestamp", nullable: false),
+                    EndTime = table.Column<DateTime>(type: "timestamp", nullable: true),
+                    MaxDuration = table.Column<int>(type: "integer", nullable: false, defaultValue: 30)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Duels", x => x.Id);
+                    table.PrimaryKey("PK_Duel", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -42,17 +42,17 @@ namespace Duely.Infrastructure.DataAccess.EntityFramework.Migrations
                     UserId = table.Column<int>(type: "integer", nullable: false),
                     Code = table.Column<string>(type: "text", nullable: false),
                     Language = table.Column<string>(type: "text", nullable: false),
-                    SubmitTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    SubmitTime = table.Column<DateTime>(type: "timestamp", nullable: false),
                     Status = table.Column<string>(type: "text", nullable: false),
-                    Verdict = table.Column<string>(type: "text", nullable: false)
+                    Verdict = table.Column<string>(type: "text", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Submissions", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Submissions_Duels_DuelId",
+                        name: "FK_Submissions_Duel_DuelId",
                         column: x => x.DuelId,
-                        principalTable: "Duels",
+                        principalTable: "Duel",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -70,7 +70,7 @@ namespace Duely.Infrastructure.DataAccess.EntityFramework.Migrations
                 name: "Submissions");
 
             migrationBuilder.DropTable(
-                name: "Duels");
+                name: "Duel");
         }
     }
 }
