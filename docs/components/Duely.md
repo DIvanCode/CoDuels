@@ -76,7 +76,7 @@
 http://localhost:5001/sse?user_id=1
 
 Дуэль стартовала, выдан task_id
-```json
+```
 event: duel_started
 {
     "duel_id": "123",
@@ -84,7 +84,7 @@ event: duel_started
 ```
 
 Подтверждение, что решение добавлено в очередь
-```json
+```
 event: submisson_received
 {
     "submission_id": "f47ac10b-58cc-4372-a567-0e02b2c3d479", 
@@ -94,7 +94,7 @@ event: submisson_received
 Обновление вердикта посылки
 
 Промежуточный результат тестирования
-```json
+```
 event: submisson_update
 {
     "submission_id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
@@ -103,7 +103,7 @@ event: submisson_update
 ```
 
 Финальный вердикт
-```json
+```
 event: submisson_verdict
 {
     "submission_id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
@@ -112,7 +112,7 @@ event: submisson_verdict
 ```
 
 Завершение дуэли
-```json
+```
 event: duel_finished
 data: {
     "winner": "1", // Или "2", "draw"
