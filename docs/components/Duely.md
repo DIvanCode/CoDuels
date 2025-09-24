@@ -71,41 +71,22 @@
 
 ## API
 
-### WebSocket API
+### SSE API
 
-ws://localhost:5001/ws?user_id=1
-
-#### Сообщения от клиента
-
-Присоединиться к дуэли
-```json
-{ "action": "join" }
-```
-
-Отправить решение
-```json
-{
-    "action": "submit",
-    "submission_id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
-    "solution": "print(sum(map(int, input().split())))",
-    "language": "Python",
-}
-```
-
-#### Сообщения от сервера
+http://localhost:5001/sse?user_id=1
 
 Дуэль стартовала, выдан task_id
 ```json
+event: duel_started
 {
-    "type": "duel_started",
     "duel_id": "123",
 }
 ```
 
 Подтверждение, что решение добавлено в очередь
 ```json
+event: submisson_received
 {
-    "type": "submisson_received",
     "submission_id": "f47ac10b-58cc-4372-a567-0e02b2c3d479", 
 }
 ```
@@ -114,8 +95,8 @@ ws://localhost:5001/ws?user_id=1
 
 Промежуточный результат тестирования
 ```json
+event: submisson_update
 {
-    "type": "submisson_update",
     "submission_id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
     "status": "Test #2 passed"
 }
@@ -123,8 +104,8 @@ ws://localhost:5001/ws?user_id=1
 
 Финальный вердикт
 ```json
+event: submisson_verdict
 {
-    "type": "submisson_verdict",
     "submission_id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
     "verdict": "Accepted", // Или "Wrong Answer on test #3", "Time Limit Exceeded", "Compilation Error"
 }
@@ -132,13 +113,28 @@ ws://localhost:5001/ws?user_id=1
 
 Завершение дуэли
 ```json
-{
-    "type": "duel_finished",
+event: duel_finished
+data: {
     "winner": "1", // Или "2", "draw"
 }
 ```
 
 ### HTTP API
+
+Присоединиться к дуэли
+POST /api/duels/join
+```json
+{ }
+```
+
+Отправить решение
+POST /api/duels/{duel_id}/submit
+```json
+{
+    "solution": "print(sum(map(int, input().split())))",
+    "language": "Python",
+}
+```
 
 Получить информацию о дуэли
 GET /api/duels/{duel_id}
