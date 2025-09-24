@@ -73,7 +73,7 @@
 
 ### SSE API
 
-http://localhost:5001/sse?user_id=1
+http://localhost:5001/api/duels/events?user_id=1
 
 Дуэль стартовала, выдан task_id
 ```
@@ -120,12 +120,6 @@ data: {
 ```
 
 ### HTTP API
-
-Присоединиться к дуэли
-POST /api/duels/join
-```json
-{ }
-```
 
 Отправить решение
 POST /api/duels/{duel_id}/submit
