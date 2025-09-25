@@ -55,57 +55,40 @@
 ## Интеграция
 
 - Пользователь встаёт в очередь ожидания дуэли
-    - фронтенд делает запрос на установку WS соединения
+    - фронтенд открывает SSE-подписку
 - Пользователь выходит из очереди ожидания дуэли
-    - фронтенд обрывает WS соединение
+    - фронтенд закрывает SSE-подписку
 - Система определяет двух участников и начинает дуэль
-    - бэкенд отправляет в WS сообщение о начале дуэли
+    - бэкенд отправляет через SSE событие duel_started
     - фронтенд делает HTTP GET запрос дуэли
 - Пользователь отправляет посылку на тестирование
-    - фронтенд отправляет посылку в WS
-    - бэкенд отправляет в WS сообщение о создании посылки
+    - фронтенд делает POST /api/duels/{duel_id}/submit
+    - бэкенд отправляет через SSE событие submisson_received
 - Система получает обновление статуса либо вердикт тестирования посылки
-    - бэкенд отправляет в WS сообщение об обновлении статуса или вердикте тестирования посылки
+    - бэкенд отправляет:
+        - промежуточные апдейты - submisson_update
+        - финальный вердикт - submisson_verdict
 - Система заканчивает дуэль
-    - бэкенд отправляет обоим пользователям в WS сообщение о завершении дуэли
+    - бэкенд отправляет через SSE событие duel_finished
 
 ## API
 
-### WebSocket API
+### SSE API
 
-ws://localhost:5001/ws?user_id=1
-
-#### Сообщения от клиента
-
-Присоединиться к дуэли
-```json
-{ "action": "join" }
-```
-
-Отправить решение
-```json
-{
-    "action": "submit",
-    "submission_id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
-    "solution": "print(sum(map(int, input().split())))",
-    "language": "Python",
-}
-```
-
-#### Сообщения от сервера
+http://localhost:5001/api/duels/events?user_id=1
 
 Дуэль стартовала, выдан task_id
-```json
+```
+event: duel_started
 {
-    "type": "duel_started",
     "duel_id": "123",
 }
 ```
 
 Подтверждение, что решение добавлено в очередь
-```json
+```
+event: submisson_received
 {
-    "type": "submisson_received",
     "submission_id": "f47ac10b-58cc-4372-a567-0e02b2c3d479", 
 }
 ```
@@ -113,32 +96,41 @@ ws://localhost:5001/ws?user_id=1
 Обновление вердикта посылки
 
 Промежуточный результат тестирования
-```json
+```
+event: submisson_update
 {
-    "type": "submisson_update",
     "submission_id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
     "status": "Test #2 passed"
 }
 ```
 
 Финальный вердикт
-```json
+```
+event: submisson_verdict
 {
-    "type": "submisson_verdict",
     "submission_id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
     "verdict": "Accepted", // Или "Wrong Answer on test #3", "Time Limit Exceeded", "Compilation Error"
 }
 ```
 
 Завершение дуэли
-```json
-{
-    "type": "duel_finished",
+```
+event: duel_finished
+data: {
     "winner": "1", // Или "2", "draw"
 }
 ```
 
 ### HTTP API
+
+Отправить решение
+POST /api/duels/{duel_id}/submit
+```json
+{
+    "solution": "print(sum(map(int, input().split())))",
+    "language": "Python",
+}
+```
 
 Получить информацию о дуэли
 GET /api/duels/{duel_id}
