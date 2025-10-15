@@ -77,11 +77,11 @@
 
 http://localhost:5001/api/duels/events?user_id=1
 
-Дуэль стартовала, выдан task_id
+Дуэль стартовала
 ```
 event: duel_started
 {
-    "duel_id": "123",
+    "duel_id": 123,
 }
 ```
 
@@ -89,7 +89,7 @@ event: duel_started
 ```
 event: submisson_received
 {
-    "submission_id": "f47ac10b-58cc-4372-a567-0e02b2c3d479", 
+    "submission_id": 33,
 }
 ```
 
@@ -98,8 +98,10 @@ event: submisson_received
 Промежуточный результат тестирования
 ```
 event: submisson_update
+
+data:
 {
-    "submission_id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+    "submission_id": 33,
     "status": "Test #2 passed"
 }
 ```
@@ -107,8 +109,10 @@ event: submisson_update
 Финальный вердикт
 ```
 event: submisson_verdict
+
+data:
 {
-    "submission_id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+    "submission_id": 33,
     "verdict": "Accepted", // Или "Wrong Answer on test #3", "Time Limit Exceeded", "Compilation Error"
 }
 ```
@@ -116,7 +120,9 @@ event: submisson_verdict
 Завершение дуэли
 ```
 event: duel_finished
-data: {
+
+data:
+{
     "winner": "1", // Или "2", "draw"
 }
 ```
@@ -124,6 +130,7 @@ data: {
 ### HTTP API
 
 Отправить решение
+
 POST /api/duels/{duel_id}/submit
 ```json
 {
@@ -133,11 +140,11 @@ POST /api/duels/{duel_id}/submit
 ```
 
 Получить информацию о дуэли
-GET /api/duels/{duel_id}
 
+GET /api/duels/{duel_id}
 ```json
 {
-    "id": "123",
+    "id": 123,
     "status": "in_progress",
     "task_id": "4cf94aac-ae47-459b-bb6a-459784fecc66",
     "starts_at": "2025-09-16T00:25:00Z",
@@ -146,18 +153,18 @@ GET /api/duels/{duel_id}
 ```
 
 Получить список посылок игрока
-GET /api/duels/{duel_id}/submissions
 
+GET /api/duels/{duel_id}/submissions
 ```json
 [
     {
-        "submission_id": "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+        "submission_id": 33,
         "status": "finished",
         "verdict": "Wring Answer on test #2",
         "created_at": "2025-09-17T14:05:00Z"
     },
     {
-        "submission_id": "d9428888-1223-4e89-bcd7-891a2c3f4a5d",
+        "submission_id": 33,
         "status": "finished",
         "verdict": "Accepted",
         "created_at": "2025-09-17T14:12:00Z"
@@ -166,11 +173,11 @@ GET /api/duels/{duel_id}/submissions
 ```
 
 Получить посылку детально
-GET /api/duels/{duel_id}/submissions/{submission_id}
 
+GET /api/duels/{duel_id}/submissions/{submission_id}
 ```json
 {
-    "submission_id": "123",
+    "submission_id": 33,
     "solution": "print(sum(map(int, input().split())))",
     "language": "Python",
     "status": "finished",

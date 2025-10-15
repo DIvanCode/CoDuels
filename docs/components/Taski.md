@@ -12,32 +12,47 @@
 
 ### Выдача информации по задаче пользователю
 
-Запрос GET /task/4cf94aac-ae47-459b-bb6a-459784fecc66
+Запрос GET /task/7d971f50363cf0aebbd87d971f50363cf0aebbd8
 
 Ответ:
 ```json
 {
-    "id": "4cf94aac-ae47-459b-bb6a-459784fecc66",
-    "name": "A + B",
-    "level": 1,
-    "statement": "statement.tex",
-    "tl": 1000,
-    "ml": 256,
-    "tests": [
-        {
-            "order": 1,
-            "input": "tests/01.in",
-            "output": "tests/01.out"
-        }
-    ]
+    "status": "OK",
+    "task": {
+        "id": "7d971f50363cf0aebbd87d971f50363cf0aebbd8",
+        "name": "A + B",
+        "level": 1,
+        "statement": "statement.tex",
+        "tl": 1000,
+        "ml": 256,
+        "tests": [
+            {
+                "order": 1,
+                "input": "tests/01.in",
+                "output": "tests/01.out"
+            }
+        ]
+    }
 }
 ```
 
 ### Выдача файла задачи
 
-Запрос GET /task/4cf94aac-ae47-459b-bb6a-459784fecc66/statement.tex
+Запрос GET /task/7d971f50363cf0aebbd87d971f50363cf0aebbd8/statement.tex
 
 Ответ: файл statement.tex
+
+### Выдача id рандомной задачи
+
+Запрос GET /task/random
+
+Ответ:
+```json
+{
+    "status": "OK",
+    "task_id": "7d971f50363cf0aebbd87d971f50363cf0aebbd8"
+}
+```
 
 ### Выдача архива с задачей
 
@@ -45,24 +60,24 @@
 
 ### Запрос на тестирование решения пользователя
 
-Запрос POST /test
+POST /test
+
 ```json
 {
-    "task_id": "4cf94aac-ae47-459b-bb6a-459784fecc66",
-    "submission_id": "1",
+    "task_id": "7d971f50363cf0aebbd87d971f50363cf0aebbd8",
+    "solution_id": "1",
     "solution": "print(sum(map(int, input().split())))",
     "language": "Python"
 }
 ```
-
-Ответ: Status
 
 ### События обновления статуса тестирования решения
 
 Тестирование решения началось
 ```json
 {
-    "submission_id": "1",
+    "status": "OK",
+    "solution_id": "1",
     "type": "start"
 }
 ```
@@ -87,7 +102,7 @@
 Тестирование решения завершилось с ошибкой (техническая ошибка)
 ```json
 {
-    "submission_id": "1",
+    "solution_id": "1",
     "type": "finish",
     "error": "ошибка"
 }
@@ -96,11 +111,8 @@
 Тестирование решения в процессе:
 ```json
 {
-    "submission_id": "1",
+    "solution_id": "1",
     "type": "status",
     "message": "Test #T passed successfully"
 }
 ```
-
-## Схема данных
-TODO
