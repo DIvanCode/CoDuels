@@ -58,87 +58,11 @@ sequenceDiagram
 
 ### Выполнение списка шагов
 
-Запрос POST /execute
+POST /execute
+
 ```json
 {
-    "steps": [
-        {
-            "name": "compile correct",
-            "type": "compile_cpp",
-            "code_source": {
-                "name": "task",
-                "type": "filestorage_bucket",
-                "bucket_id": "7d971f50363cf0aebbd87d971f50363cf0aebbd8",
-                "download_endpoint": "localhost:5252",
-                "file": "solution.cpp"
-            }
-        },
-        {
-            "name": "compile checker",
-            "type": "compile_cpp",
-            "code_source": {
-                "name": "task",
-                "type": "filestorage_bucket",
-                "bucket_id": "7d971f50363cf0aebbd87d971f50363cf0aebbd8",
-                "download_endpoint": "localhost:5252",
-                "file": "checker.cpp"
-            }
-        },
-        {
-            "name": "run correct on test 1",
-            "type": "run_cpp",
-            "exe_source": {
-                "type": "other_step",
-                "step_name": "compile correct"
-            },
-            "input_source": {
-                "name": "task",
-                "type": "filestorage_bucket",
-                "bucket_id": "7d971f50363cf0aebbd87d971f50363cf0aebbd8",
-                "download_endpoint": "localhost:5252",
-                "file": "tests/01.in"
-            },
-            "time_limit": 2000,
-            "memory_limit": 256,
-            "show_output": false
-        },
-        {
-            "name": "run suspect on test 1",
-            "type": "run_py",
-            "code_source": {
-                "name": "suspect solution",
-                "type": "input",
-                "content": "print(sum(map(int, input().split())))\n",
-                "file": "suspect.py"
-            },
-            "input_source": {
-                "name": "task",
-                "type": "filestorage_bucket",
-                "bucket_id": "7d971f50363cf0aebbd87d971f50363cf0aebbd8",
-                "download_endpoint": "localhost:5252",
-                "file": "tests/01.in"
-            },
-            "time_limit": 2000,
-            "memory_limit": 256,
-            "show_output": false
-        },
-        {
-            "name": "check on test 1",
-            "type": "check_cpp",
-            "checker_exe_source": {
-                "type": "other_step",
-                "step_name": "compile checker"
-            },
-            "correct_output_source": {
-                "type": "other_step",
-                "step_name": "run correct on test 1"
-            },
-            "suspect_output_source": {
-                "type": "other_step",
-                "step_name": "run suspect on test 1"
-            }
-        }
-    ]
+    "steps": [ "$step", "$step", "..." ]
 }
 ```
 
@@ -158,20 +82,17 @@ sequenceDiagram
 1. Файлы, которые лежат в бакете в рамках пакета filestorage (например, файлы задачи)
 ```json
 {
-    "name": "task",
     "type": "filestorage_bucket",
     "bucket_id": "7d971f50363cf0aebbd87d971f50363cf0aebbd8",
-    "download_endpoint": "localhost:5252",
+    "download_endpoint": "http://localhost:5252",
     "file": "tests/01.in"
 }
 ```
 2. Файлы, которые передаются от пользователя (например, решение пользователя)
 ```json
 {
-    "name": "suspect solution",
-    "type": "input",
-    "content": "print(sum(map(int, input().split())))\n",
-    "file": "suspect.py"
+    "type": "inline",
+    "content": "print(sum(map(int, input().split())))\n"
 },
 ```
 3. Файлы, которые являются артефактами других шагов (например, скомпилированный C++ код)
@@ -190,13 +111,7 @@ sequenceDiagram
 {
     "name": "compile correct",
     "type": "compile_cpp",
-    "code_source": {
-        "name": "task",
-        "type": "filestorage_bucket",
-        "bucket_id": "7d971f50363cf0aebbd87d971f50363cf0aebbd8",
-        "download_endpoint": "localhost:5252",
-        "file": "solution.cpp"
-    }
+    "code": { "$source" }
 }
 ```
 2. Запуск скомпилированного C++ кода
@@ -204,17 +119,8 @@ sequenceDiagram
 {
     "name": "run correct on test 1",
     "type": "run_cpp",
-    "exe_source": {
-        "type": "other_step",
-        "step_name": "compile correct"
-    },
-    "input_source": {
-        "name": "task",
-        "type": "filestorage_bucket",
-        "bucket_id": "7d971f50363cf0aebbd87d971f50363cf0aebbd8",
-        "download_endpoint": "localhost:5252",
-        "file": "tests/01.in"
-    },
+    "compiled_code": { "$source" },
+    "run_input": { "$source" },
     "time_limit": 2000,
     "memory_limit": 256,
     "show_output": false
@@ -225,19 +131,8 @@ sequenceDiagram
 {
     "name": "run suspect on test 1",
     "type": "run_py",
-    "code_source": {
-        "name": "suspect solution",
-        "type": "input",
-        "content": "print(sum(map(int, input().split())))\n",
-        "file": "suspect.py"
-    },
-    "input_source": {
-        "name": "task",
-        "type": "filestorage_bucket",
-        "bucket_id": "7d971f50363cf0aebbd87d971f50363cf0aebbd8",
-        "download_endpoint": "localhost:5252",
-        "file": "tests/01.in"
-    },
+    "code": { "$source" },
+    "run_input": { "$source" },
     "time_limit": 2000,
     "memory_limit": 256,
     "show_output": false
@@ -248,19 +143,8 @@ sequenceDiagram
 {
     "name": "run suspect on test 1",
     "type": "run_go",
-    "code_source": {
-        "name": "suspect solution",
-        "type": "input",
-        "content": "package main\nimport \"fmt\"\nfunc main() { fmt.Println(\"10\") }",
-        "file": "suspect.go"
-    },
-    "input_source": {
-        "name": "task",
-        "type": "filestorage_bucket",
-        "bucket_id": "7d971f50363cf0aebbd87d971f50363cf0aebbd8",
-        "download_endpoint": "localhost:5252",
-        "file": "tests/01.in"
-    },
+    "code": { "$source" },
+    "run_input": { "$source" },
     "time_limit": 2000,
     "memory_limit": 256,
     "show_output": false
@@ -271,18 +155,9 @@ sequenceDiagram
 {
     "name": "check on test 1",
     "type": "check_cpp",
-    "checker_exe_source": {
-        "type": "other_step",
-        "step_name": "compile checker"
-    },
-    "correct_output_source": {
-        "type": "other_step",
-        "step_name": "run correct on test 1"
-    },
-    "suspect_output_source": {
-        "type": "other_step",
-        "step_name": "run suspect on test 1"
-    }
+    "compiled_checker": { "$source" },
+    "correct_output": { "$source" },
+    "suspect_output": { "$source" }
 }
 ```
 
@@ -377,6 +252,3 @@ sequenceDiagram
     "status": "WA"
 }
 ```
-
-## Схема данных
-TODO
