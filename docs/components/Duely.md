@@ -148,10 +148,10 @@ GET /api/duels/{duel_id}
 ```json
 {
     "id": 123,
-    "status": "in_progress",
+    "status": "InProgress",
     "task_id": "4cf94aac-ae47-459b-bb6a-459784fecc66",
-    "starts_at": "2025-09-16T00:25:00Z",
-    "deadline_at": "2025-09-16T00:55:00Z"
+    "start_time": "2025-10-20T20:54:21.996464",
+    "max_duration": 30
 }
 ```
 
