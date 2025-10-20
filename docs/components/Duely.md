@@ -132,6 +132,9 @@ data:
 Отправить решение
 
 POST /api/duels/{duel_id}/submit
+
+**Для запроса нужно добавить в HTTP запрос заголовок "Cookie: UserId=%d", где %d - число (id пользователя).**
+
 ```json
 {
     "solution": "print(sum(map(int, input().split())))",
