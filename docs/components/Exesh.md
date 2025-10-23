@@ -58,19 +58,30 @@ sequenceDiagram
 
 ### Выполнение списка шагов
 
-POST /execute
+#### Запрос
 
+`POST /execute`
 ```json
 {
-    "steps": [ "$step", "$step", "..." ]
+    "steps": [ $step, $step, ... ]
 }
 ```
 
-Ответ:
+#### Ответ
+
+Успех
 ```json
 {
-    "status": "ok",
+    "status": "OK",
     "execution_id": "4cf94aac-ae47-459b-bb6a-459784fecc66"
+}
+```
+
+Ошибка
+```json
+{
+    "status": "Error",
+    "error": "ошибка"
 }
 ```
 

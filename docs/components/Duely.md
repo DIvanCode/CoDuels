@@ -16,125 +16,237 @@
 - Пересчёт рейтинга участников.
 - Выдача истории дуэлей пользователя.
 
-## Домен
-
-### Сущности
+## Процессы
 
 - Пользователь:
-    - id
-    - ник
-    - рейтинг
-- Дуэль:
-    - id
-    - два пользователя
-    - время начала, максимальная продолжительность, время реального конца
-    - задача
-    - результат (кто выиграл либо ничья)
-    - изменение рейтинга пользователей
-    - посылки пользователей
-- Посылка:
-    - id
-    - пользователь
-    - дуэль
-    - время отправки
-    - код, язык
-    - текущий статус
-    - вердикт тестирования
-
-### Процессы
-
-- Пользователь встаёт в очередь ожидания дуэли
-- Пользователь выходит из очереди ожидания дуэли
-- Система определяет двух участников и начинает дуэль
-- Пользователь отправляет посылку на тестирование
-- Система получает обновление статуса либо вердикт тестирования посылки
-- Система заканчивает дуэль
-- Пользователь смотрит историю своих дуэлей
-- Пользователь смотрит одну из своих дуэлей
+    - встаёт в очередь ожидания дуэли
+    - выходит из очереди ожидания дуэли
+    - отправляет посылку на тестирование
+    - получает список своих посылок в дуэли
+    - получает детальную информацию по посылке
+    - получает историю своих дуэлей
+    - получает одну из своих дуэлей
+- Система:
+    - определяет двух участников и начинает дуэль
+    - получает обновление статуса либо вердикт тестирования посылки
+    - заканчивает дуэль
 
 ## Интеграция
+
+### Регистрация, аутентификация и авторизация
+
+Регистрация и аутентификация происходят по связке никнейм + пароль.
+
+При успешной аутентификации выдаётся связка токенов:
+- короткоживуший многоразовый `AccessToken`
+- долгоживущий одноразовый `RefreshToken`
+
+Для авторизации запросов в Duely требуется использовать `AccessToken` (HTTP-заголовок `Authorization: Bearer {AccessToken}`).
+
+При истечении времени жизни `AccessToken` необходимо обновить его с помощью `RefreshToken` и получить новую связку токенов.
+
+### Флоу участия в дуэли
 
 - Пользователь встаёт в очередь ожидания дуэли
     - фронтенд открывает SSE-подписку
 - Пользователь выходит из очереди ожидания дуэли
     - фронтенд закрывает SSE-подписку
 - Система определяет двух участников и начинает дуэль
-    - бэкенд отправляет через SSE событие duel_started
+    - бэкенд отправляет через SSE событие duel_started и id дуэли
     - фронтенд делает HTTP GET запрос дуэли
 - Пользователь отправляет посылку на тестирование
-    - фронтенд делает POST /api/duels/{duel_id}/submit
-    - бэкенд отправляет через SSE событие submisson_received
-- Система получает обновление статуса либо вердикт тестирования посылки
-    - бэкенд отправляет:
-        - промежуточные апдейты - submisson_update
-        - финальный вердикт - submisson_verdict
+    - фронтенд делает POST запрос на бэкенд и получает id посылки
+    - фронтенд периодически делает GET запрос посылки (short polling)
 - Система заканчивает дуэль
     - бэкенд отправляет через SSE событие duel_finished
+    - фронтенд делает HTTP GET запрос дуэли
 
 ## API
 
-### SSE API
+### Регистрация
 
-http://localhost:5001/api/duels/events?user_id=1
+#### Запрос
 
-Дуэль стартовала
-```
-event: duel_started
+`POST /users/register`
+```json
 {
-    "duel_id": 123,
+    "nickname": "tourist",
+    "password": "12345678_secret"
 }
 ```
 
-Подтверждение, что решение добавлено в очередь
-```
-event: submisson_received
+#### Ответ
+
+Успех
+```json
 {
-    "submission_id": 33,
+    "access_token": "{access_token}",
+    "refresh_token": "{refresh_token}"
 }
 ```
 
-Обновление вердикта посылки
-
-Промежуточный результат тестирования
+Ошибка
+```json
+{
+    "title": "ошибка"
+}
 ```
-event: submisson_update
 
+### Аутентификация
+
+#### Запрос
+
+`POST /users/login`
+```json
+{
+    "nickname": "tourist",
+    "password": "12345678_secret"
+}
+```
+
+#### Ответ
+
+Успех
+```json
+{
+    "access_token": "{access_token}",
+    "refresh_token": "{refresh_token}"
+}
+```
+
+Ошибка
+```json
+{
+    "title": "ошибка"
+}
+```
+
+### Обновление связки токенов
+
+#### Запрос
+
+`POST /users/refresh`
+```json
+    "refresh_token": "{refresh_token}"
+```
+
+#### Ответ
+
+Успех
+```json
+{
+    "access_token": "{access_token}",
+    "refresh_token": "{refresh_token}"
+}
+```
+
+Ошибка
+```json
+{
+    "title": "ошибка"
+}
+```
+
+### Текущий пользователь
+
+#### Запрос
+
+`GET /users/iam`
+
+#### Ответ
+
+Успех
+```json
+{
+    "id": 1,
+    "nickname": "tourist"
+}
+```
+
+Ошибка
+```json
+{
+    "title": "ошибка"
+}
+```
+
+### Встать в очередь ожидания дуэли
+
+Происходит запрос на создание SSE-подключения.
+
+`GET /duels/connect`
+
+#### События от бэкенда в SSE-подключение
+
+- Дуэль началась
+```json
+event: DuelStarted
 data:
 {
-    "submission_id": 33,
-    "status": "Test #2 passed"
+    "duel_id": 1,
 }
 ```
 
-Финальный вердикт
-```
-event: submisson_verdict
-
+- Дуэль завершилась
+```json
+event: DuelFinished
 data:
 {
-    "submission_id": 33,
-    "verdict": "Accepted", // Или "Wrong Answer on test #3", "Time Limit Exceeded", "Compilation Error"
+    "duel_id": 1
 }
 ```
 
-Завершение дуэли
-```
-event: duel_finished
+### Получить информацию о дуэли
 
-data:
+#### Запрос
+
+`GET /duels/{duel_id}`
+
+Пример:
+- `GET /duels/1`
+
+#### Ответ
+
+Успех
+```json
+// дуэль в процессе
 {
-    "winner": "1", // Или "2", "draw"
+    "id": 1,
+    "status": "InProgress",
+    "opponent_id": 2,
+    "task_id": "7d971f50363cf0aebbd87d971f50363cf0aebbd8",
+    "start_time": "2025-10-20T20:54:21.996464",
+    "deadline_time": "2025-10-20T21:24:21.996464"
+}
+
+// дуэль завершилась
+{
+    "id": 1,
+    "status": "Finished",
+    "opponent_id": 2,
+    "result": "Win", // или Lose, или Draw
+    "task_id": "7d971f50363cf0aebbd87d971f50363cf0aebbd8",
+    "start_time": "2025-10-20T20:54:21.996464",
+    "deadline_time": "2025-10-20T21:24:21.996464",
+    "end_time": "2025-10-20T21:03:59.341261"
 }
 ```
 
-### HTTP API
+Ошибка
+```json
+{
+    "title": "ошибка"
+}
+```
 
-Отправить решение
+### Отправить решение на проверку
 
-POST /api/duels/{duel_id}/submit
+#### Запрос
 
-**Для запроса нужно добавить в HTTP запрос заголовок "Cookie: UserId=%d", где %d - число (id пользователя).**
+`POST /duels/{duel_id}/submissions`
 
+Пример:
+- `POST /duels/1/submissions`
 ```json
 {
     "solution": "print(sum(map(int, input().split())))",
@@ -142,83 +254,167 @@ POST /api/duels/{duel_id}/submit
 }
 ```
 
-Получить информацию о дуэли
+#### Ответ
 
-GET /api/duels/{duel_id}
+Успех
 ```json
 {
-    "id": 123,
-    "status": "InProgress",
-    "task_id": "4cf94aac-ae47-459b-bb6a-459784fecc66",
-    "start_time": "2025-10-20T20:54:21.996464",
-    "max_duration": 30
+    "submission_id": 1
 }
 ```
 
-Получить список посылок игрока
+Ошибка
+```json
+{
+    "title": "ошибка"
+}
+```
 
-GET /api/duels/{duel_id}/submissions
+
+### Список посылок пользователя в дуэли
+
+#### Запрос
+
+`GET /duels/{duel_id}/submissions`
+
+Пример:
+- `GET /duels/1/submissions`
+
+#### Ответ
+
+Успех
 ```json
 [
     {
-        "submission_id": 33,
-        "status": "finished",
-        "verdict": "Wring Answer on test #2",
+        "submission_id": 1,
+        "status": "Queued",
         "created_at": "2025-09-17T14:05:00Z"
     },
     {
-        "submission_id": 33,
-        "status": "finished",
+        "submission_id": 2,
+        "status": "Running",
+        "created_at": "2025-09-17T14:12:00Z"
+    },
+    {
+        "submission_id": 3,
+        "status": "Done",
         "verdict": "Accepted",
         "created_at": "2025-09-17T14:12:00Z"
     }
 ]
 ```
 
-Получить посылку детально
-
-GET /api/duels/{duel_id}/submissions/{submission_id}
+Ошибка
 ```json
 {
-    "submission_id": 33,
+    "title": "ошибка"
+}
+```
+
+### Получить детальную информацию о посылке
+
+#### Запрос
+
+`GET /duels/{duel_id}/submissions/{submission_id}`
+
+Пример:
+- `GET /duels/1/submissions/1`
+
+#### Ответ
+
+Успех
+```json
+// тестирование не началось
+{
+    "submission_id": 1,
+    "status": "Queued",
     "solution": "print(sum(map(int, input().split())))",
     "language": "Python",
-    "status": "finished",
+    "submit_time": "2025-09-17T14:05:00Z"
+}
+
+// тестирование в процессе
+{
+    "submission_id": 1,
+    "status": "Running",
+    "solution": "print(sum(map(int, input().split())))",
+    "language": "Python",
+    "submit_time": "2025-09-17T14:05:00Z"
+}
+
+// тестирование в процессе и пользователю можно отобразить "message"
+{
+    "submission_id": 1,
+    "status": "Running",
+    "message": "Test 1 passed",
+    "solution": "print(sum(map(int, input().split())))",
+    "language": "Python",
+    "submit_time": "2025-09-17T14:05:00Z"
+}
+
+// тестирование завершено
+{
+    "submission_id": 1,
+    "status": "Done",
     "verdict": "Accepted",
-    "created_at": "2025-09-17T14:12:00Z"
+    "solution": "print(sum(map(int, input().split())))",
+    "language": "Python",
+    "submit_time": "2025-09-17T14:05:00Z"
+}
+
+// тестирование завершено и пользователю можно отобразить "message"
+{
+    "submission_id": 1,
+    "status": "Done",
+    "verdict": "Compilation Error",
+    "message": "ошибка...",
+    "solution": "print(sum(map(int, input().split())))",
+    "language": "Python",
+    "submit_time": "2025-09-17T14:05:00Z"
+}
+```
+
+Ошибка
+```json
+{
+    "title": "ошибка"
 }
 ```
 
 ## Схема данных
-### duels
-| Поле          | Тип        | Описание                             |
-|---------------|------------|--------------------------------------|
-| id            | serial PK  | id дуэли                             |
-| task_id       | text       | id задачи (внешний, из Taski)        |
-| user1_id      | int        | id первого участника                 |
-| user2_id      | int        | id второго участника                 |
-| status        | text       | Признак завершения дуэли             |
-| result        | varchar(8) | Результат: draw / user1 / user2      |
-| max_duration  | interval   | Макс. продолжительность(дефол 30)    |
-| start_time    | timestamp  | Время начала                         |
-| end_time      | timestamp  | Время окончания                      |
+
+### Users
+| Поле          | Тип        | Описание                              |
+|---------------|------------|---------------------------------------|
+| Id            | serial PK  | id пользователя                       |
+| Nickname      | text       | никнейм пользователя                  |
+| PasswordHash  | text       | хеш пароля                            |
+| PasswordSalt  | text       | соль пароля                           |
+| RefreshToken  | text       | refresh token пользователя            |
+
+### Duels
+| Поле          | Тип        | Описание                              |
+|---------------|------------|---------------------------------------|
+| Id            | serial PK  | id дуэли                              |
+| TaskId        | text       | id задачи (внешний, из Taski)         |
+| User1Id       | int FK     | id первого участника                  |
+| User2Ud       | int FK     | id второго участника                  |
+| Status        | text       | статус дуэли                          |
+| WinnerId      | int? FK    | id победителя (или NULL)              |
+| StartTime     | timestamp  | время начала дуэли                    |
+| DeadlineTime  | timestamp  | время автоматического окончания дуэли |
+| EndTime       | timestamp? | время фактического окончания дуэли    |
 
 
-### submissions
-| Поле        | Тип        | Описание                               |
-|-------------|------------|----------------------------------------|
-| id          | serial PK  | id посылки                             |
-| duel_id     | int FK     | Ссылка на дуэль                        |
-| user_id     | int        | id пользователя (user_id)              |
-| code        | text       | Код решения                            |
-| language    | text       | Язык                                   |
-| submit_time | timestamp  | Время отправки                         |
-| status      | text       | queued / running / done                |
-| verdict     | text       | OK/TLE/WA                              |
-
-### связи
-- **duels** ──< **submissions** (одна дуэль содержит много посылок)
-- `duels.task_id` →  **Taski** 
-
-### Картинка
-диаграмма по [ссылке](https://dbdiagram.io/e/68bb1a3d61a46d388ead2b84/68caa2775779bb7265e3ce14) специально темная тема :)
+### Submissions
+| Поле        | Тип        | Описание                                |
+|-------------|------------|-----------------------------------------|
+| Id          | serial PK  | id посылки                              |
+| DuelId      | int FK     | id дуэли                                |
+| UserId      | int FK     | id пользователя                         |
+| Code        | text       | код решения                             |
+| Language    | text       | язык решения                            |
+| SubmitTime  | timestamp  | время отправки                          |
+| Status      | text       | статус тестирования                     |
+| Verdict     | text       | вердикт тестирования                    |
+| Message     | text       | сообщение для пользователя              |

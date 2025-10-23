@@ -10,19 +10,50 @@
 
 ## API
 
+### Выдача рандомного id задачи
+
+#### Запрос
+
+`GET /task/random`
+
+#### Ответ
+
+Успех
+```json
+{
+    "status": "OK",
+    "task_id": "7d971f50363cf0aebbd87d971f50363cf0aebbd8"
+}
+```
+
+Ошибка
+```json
+{
+    "status": "Error",
+    "error": "ошибка"
+}
+```
+
 ### Выдача информации по задаче пользователю
 
-Запрос GET /task/7d971f50363cf0aebbd87d971f50363cf0aebbd8
+#### Запрос
 
-Ответ:
+`GET /task/{id}`
+
+Пример:
+- `GET /task/7d971f50363cf0aebbd87d971f50363cf0aebbd8`
+
+#### Ответ
+
+Успех
 ```json
 {
     "status": "OK",
     "task": {
         "id": "7d971f50363cf0aebbd87d971f50363cf0aebbd8",
-        "name": "A + B",
-        "level": 1,
-        "statement": "statement.tex",
+        "title": "A + B",
+        "type": "write_code",
+        "statement": "statement.md",
         "tl": 1000,
         "ml": 256,
         "tests": [
@@ -36,23 +67,27 @@
 }
 ```
 
-### Выдача файла задачи
-
-Запрос GET /task/7d971f50363cf0aebbd87d971f50363cf0aebbd8/statement.tex
-
-Ответ: файл statement.tex
-
-### Выдача id рандомной задачи
-
-Запрос GET /task/random
-
-Ответ:
+Ошибка
 ```json
 {
-    "status": "OK",
-    "task_id": "7d971f50363cf0aebbd87d971f50363cf0aebbd8"
+    "status": "Error",
+    "error": "ошибка"
 }
 ```
+
+### Выдача файла задачи
+
+#### Запрос
+
+`GET /task/{id}/{path}`
+
+Примеры:
+- `GET /task/7d971f50363cf0aebbd87d971f50363cf0aebbd8/statement.md`
+- `GET /task/7d971f50363cf0aebbd87d971f50363cf0aebbd8/tests/01.in`
+
+#### Ответ
+
+`содержимое файла`
 
 ### Выдача архива с задачей
 
@@ -60,8 +95,9 @@
 
 ### Запрос на тестирование решения пользователя
 
-POST /test
+#### Запрос
 
+`POST /test`
 ```json
 {
     "task_id": "7d971f50363cf0aebbd87d971f50363cf0aebbd8",
@@ -71,35 +107,53 @@ POST /test
 }
 ```
 
-### События обновления статуса тестирования решения
+#### Ответ
 
-Тестирование решения началось
+Успех
 ```json
 {
-    "status": "OK",
+    "status": "OK"
+}
+```
+
+Ошибка
+```json
+{
+    "status": "Error",
+    "error": "ошибка"
+}
+```
+
+### События обновления статуса тестирования решения
+
+- Тестирование решения началось
+```json
+{
     "solution_id": "1",
     "type": "start"
 }
 ```
 
-Тестирование решения завершилось
+- Тестирование решения завершилось
 ```json
 {
-    "submission_id": "1",
+    "solution_id": "1",
     "type": "finish",
-    "verdict": "Accepted" // либо "<вердикт> on test #T", где <вердикт> = ["Time Limit", "Memory Limit", "Wrong Answer", "Runtime Error"]
+    "verdict": "Accepted"
 }
 ```
-Тестирование решения завершилось с ошибкой, нужно показать сообщение пользователю
+
+- Тестирование решения завершилось с ошибкой, нужно показать сообщение пользователю
 ```json
 {
-    "submission_id": "1",
+    "solution_id": "1",
     "type": "finish",
     "verdict": "Compilation Error",
-    "message": "ошибка компиляции бла-бла-бла"
+    "message": "ошибка компиляции..."
 }
 ```
-Тестирование решения завершилось с ошибкой (техническая ошибка)
+
+- Тестирование решения завершилось с ошибкой (техническая ошибка)
 ```json
 {
     "solution_id": "1",
@@ -108,11 +162,11 @@ POST /test
 }
 ```
 
-Тестирование решения в процессе:
+- Тестирование решения в процессе:
 ```json
 {
     "solution_id": "1",
     "type": "status",
-    "message": "Test #T passed successfully"
+    "message": "Test N passed"
 }
 ```
