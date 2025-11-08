@@ -77,13 +77,7 @@
 
 #### Ответ
 
-Успех
-```json
-{
-    "access_token": "{access_token}",
-    "refresh_token": "{refresh_token}"
-}
-```
+Успех - в ответе статус 200.
 
 Ошибка
 ```json
