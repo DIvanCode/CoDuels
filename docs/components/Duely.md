@@ -275,7 +275,7 @@ data:
 
 #### Запрос
 
-`GET /duels/history`
+`GET /duels`
 
 #### Ответ
 
@@ -285,15 +285,17 @@ data:
   {
     "id": 1,
     "status": "Finished",
+    "opponent_nickname": "tourist",
+    "winner_nickname": "admin",
     "start_time": "2025-10-20T20:54:21.996464",
-    "deadline_time": "2025-10-20T21:24:21.996464",
     "end_time": "2025-10-20T21:03:59.341261"
   },
   {
     "id": 2,
     "status": "InProgress",
+    "opponent_nickname": "tourist",
+    "winner_nickname": null,
     "start_time": "2025-10-21T10:15:00",
-    "deadline_time": "2025-10-21T10:45:00",
     "end_time": null
   }
 ]
