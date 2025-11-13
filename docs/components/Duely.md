@@ -265,6 +265,44 @@ data:
 }
 ```
 
+### История дуэлей пользователя
+
+#### Запрос
+
+`GET /duels`
+
+#### Ответ
+
+Успех
+```json
+[
+  {
+    "id": 1,
+    "status": "Finished",
+    "opponent_nickname": "tourist",
+    "winner_nickname": "admin",
+    "start_time": "2025-10-20T20:54:21.996464",
+    "end_time": "2025-10-20T21:03:59.341261"
+  },
+  {
+    "id": 2,
+    "status": "InProgress",
+    "opponent_nickname": "tourist",
+    "winner_nickname": null,
+    "start_time": "2025-10-21T10:15:00",
+    "end_time": null
+  }
+]
+```
+
+Ошибка
+```json
+{
+    "title": "ошибка",
+    "detail": "детальная ошибка" // опционально
+}
+```
+
 ### Отправить решение на проверку
 
 #### Запрос
@@ -427,7 +465,7 @@ data:
 | Id            | serial PK  | id дуэли                              |
 | TaskId        | text       | id задачи (внешний, из Taski)         |
 | User1Id       | int FK     | id первого участника                  |
-| User2Ud       | int FK     | id второго участника                  |
+| User2Id       | int FK     | id второго участника                  |
 | Status        | text       | статус дуэли                          |
 | WinnerId      | int? FK    | id победителя (или NULL)              |
 | StartTime     | timestamp  | время начала дуэли                    |
