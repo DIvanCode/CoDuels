@@ -53,6 +53,7 @@
         "id": "7d971f50363cf0aebbd87d971f50363cf0aebbd8",
         "title": "A + B",
         "type": "write_code",
+        "level": 1,
         "statement": "statement.md",
         "tl": 1000,
         "ml": 256,
@@ -74,6 +75,48 @@
     "error": "ошибка"
 }
 ```
+
+### Выдача списка задач
+
+#### Запрос
+
+`GET /task/list`
+
+#### Ответ
+
+Успех
+```json
+{
+    "status": "OK",
+    "tasks": [
+        {
+            "id": "7d971f50363cf0aebbd87d971f50363cf0aebbd8",
+            "title": "A + B",
+            "type": "write_code",
+            "level": 1,
+            "statement": "statement.md",
+            "tl": 1000,
+            "ml": 256,
+            "tests": [
+                {
+                    "order": 1,
+                    "input": "tests/01.in",
+                    "output": "tests/01.out"
+                }
+            ]
+        }
+    ]
+}
+```
+
+Ошибка
+```json
+{
+    "status": "Error",
+    "error": "ошибка"
+}
+```
+
 
 ### Выдача файла задачи
 
