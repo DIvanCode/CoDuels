@@ -621,3 +621,20 @@ GET /duels/{duel_id}/runs/{run_id}
 | Status      | text       | статус тестирования                     |
 | Verdict     | text       | вердикт тестирования                    |
 | Message     | text       | сообщение для пользователя              |
+
+
+### UserCodeRuns
+| Поле       | Тип        | Описание                                   |
+|------------|------------|--------------------------------------------|
+| Id         | serial PK  | id запуска кода                            |
+| DuelId     | int FK     | id дуэли                                   |
+| UserId     | int FK     | id пользователя                            |
+| Code       | text       | код решения                                |
+| Language   | text       | язык решения                               |
+| Input      | text       | пользовательские входные данные            |
+| CreatedAt  | timestamp  | время создания запуска                     |
+| Status     | text       | статус выполнения (Queued/Running/Done)    |
+| Verdict    | text       | результат выполнения (OK/RE/CE/TL/ML/ERROR)|
+| Output     | text       | вывод программы (stdout)                   |
+| Error      | text       | текст ошибки (stderr/compile error)        |
+| ExecutionId| text       | id выполнения в Exesh                      |
