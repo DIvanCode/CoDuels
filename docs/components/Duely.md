@@ -448,6 +448,142 @@ data:
 }
 ```
 
+### Запуск кода на своих входных данных
+
+#### Запрос
+POST /duels/{duel_id}/runs
+
+```json
+{
+    "solution": "print(input()[::-1])",
+    "language": "Python",
+    "input": "hello"
+}
+```
+
+#### Ответ
+Успех
+```json
+{
+    "run_id": 1
+}
+```
+
+Ошибка
+```json
+{
+    "title": "ошибка",
+    "detail": "детальная ошибка" // опционально
+}
+```
+
+### Список запусков пользователя в дуэли
+
+#### Запрос
+GET /duels/{duel_id}/runs
+
+#### Ответ
+
+Успех
+```json
+[
+    {
+        "run_id": 1,
+        "status": "Queued",
+        "verdict": null,
+        "created_at": "2025-09-17T14:05:00Z"
+    },
+    {
+        "run_id": 2,
+        "status": "Done",
+        "verdict": "OK",
+        "created_at": "2025-09-17T14:12:00Z"
+    }
+]
+```
+
+Ошибка
+```json
+{
+    "title": "ошибка",
+    "detail": "детальная ошибка" // опционально
+}
+```
+
+### Получить детальную информацию о запуске
+#### Запрос
+GET /duels/{duel_id}/runs/{run_id}
+
+#### Ответ
+Успех
+```json
+// запуск не начался
+{
+    "run_id": 1,
+    "status": "Queued",
+    "solution": "print(input()[::-1])",
+    "language": "Python",
+    "input": "hello",
+    "created_at": "2025-09-17T14:05:00Z"
+}
+
+// запуск в процессе
+{
+    "run_id": 1,
+    "status": "Running",
+    "solution": "print(input()[::-1])",
+    "language": "Python",
+    "input": "hello",
+    "created_at": "2025-09-17T14:05:00Z"
+}
+
+// запуск завершён успешно, есть вывод программы
+{
+    "run_id": 1,
+    "status": "Done",
+    "verdict": "OK",
+    "output": "olleh",
+    "solution": "print(input()[::-1])",
+    "language": "Python",
+    "input": "hello",
+    "created_at": "2025-09-17T14:05:00Z"
+}
+
+// запуск завершён с ошибкой выполнения
+{
+    "run_id": 1,
+    "status": "Done",
+    "verdict": "RE",
+    "error": "Traceback (most recent call last): ...",
+    "output": "",
+    "solution": "print(input()[::-1])",
+    "language": "Python",
+    "input": "hello",
+    "created_at": "2025-09-17T14:05:00Z"
+}
+
+// запуск завершён с ошибкой компиляции
+{
+    "run_id": 1,
+    "status": "Done",
+    "verdict": "CE",
+    "error": "ошибка компиляции бла-бла-бла",
+    "solution": "print(input()[::-1])",
+    "language": "Cpp",
+    "input": "hello",
+    "created_at": "2025-09-17T14:05:00Z"
+}
+```
+
+Ошибка
+```json
+{
+    "title": "ошибка",
+    "detail": "детальная ошибка" // опционально
+}
+```
+
+
 ## Схема данных
 
 ### Users
