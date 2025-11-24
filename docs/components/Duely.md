@@ -156,7 +156,8 @@
 ```json
 {
     "id": 1,
-    "nickname": "tourist"
+    "nickname": "tourist",
+    "rating": 3000
 }
 ```
 
@@ -183,7 +184,8 @@
 ```json
 {
     "id": 1,
-    "nickname": "tourist"
+    "nickname": "tourist",
+    "rating": 3000
 }
 ```
 
@@ -282,16 +284,18 @@ data:
     "opponent_nickname": "tourist",
     "winner_nickname": "admin",
     "start_time": "2025-10-20T20:54:21.996464",
-    "end_time": "2025-10-20T21:03:59.341261"
+    "end_time": "2025-10-20T21:03:59.341261",
+    "rating_delta": 20
   },
-  {
+{
     "id": 2,
-    "status": "InProgress",
+    "status": "Finished",
     "opponent_nickname": "tourist",
-    "winner_nickname": null,
-    "start_time": "2025-10-21T10:15:00",
-    "end_time": null
-  }
+    "winner_nickname": "admin",
+    "start_time": "2025-10-20T20:54:21.996464",
+    "end_time": "2025-10-20T21:03:59.341261",
+    "rating_delta": -30
+  },
 ]
 ```
 
@@ -353,17 +357,20 @@ data:
     {
         "submission_id": 1,
         "status": "Queued",
+        "language": "Python",
         "created_at": "2025-09-17T14:05:00Z"
     },
     {
         "submission_id": 2,
         "status": "Running",
+        "language": "Python",
         "created_at": "2025-09-17T14:12:00Z"
     },
     {
         "submission_id": 3,
         "status": "Done",
         "verdict": "Accepted",
+        "language": "Python",
         "created_at": "2025-09-17T14:12:00Z"
     }
 ]
@@ -396,7 +403,7 @@ data:
     "status": "Queued",
     "solution": "print(sum(map(int, input().split())))",
     "language": "Python",
-    "submit_time": "2025-09-17T14:05:00Z"
+    "created_at": "2025-09-17T14:05:00Z"
 }
 
 // тестирование в процессе
@@ -405,7 +412,7 @@ data:
     "status": "Running",
     "solution": "print(sum(map(int, input().split())))",
     "language": "Python",
-    "submit_time": "2025-09-17T14:05:00Z"
+    "created_at": "2025-09-17T14:05:00Z"
 }
 
 // тестирование в процессе и пользователю можно отобразить "message"
@@ -415,7 +422,7 @@ data:
     "message": "Test 1 passed",
     "solution": "print(sum(map(int, input().split())))",
     "language": "Python",
-    "submit_time": "2025-09-17T14:05:00Z"
+    "created_at": "2025-09-17T14:05:00Z"
 }
 
 // тестирование завершено
@@ -425,7 +432,7 @@ data:
     "verdict": "Accepted",
     "solution": "print(sum(map(int, input().split())))",
     "language": "Python",
-    "submit_time": "2025-09-17T14:05:00Z"
+    "created_at": "2025-09-17T14:05:00Z"
 }
 
 // тестирование завершено и пользователю можно отобразить "message"
@@ -436,7 +443,7 @@ data:
     "message": "ошибка...",
     "solution": "print(sum(map(int, input().split())))",
     "language": "Python",
-    "submit_time": "2025-09-17T14:05:00Z"
+    "created_at": "2025-09-17T14:05:00Z"
 }
 ```
 
@@ -458,19 +465,22 @@ data:
 | PasswordHash  | text       | хеш пароля                            |
 | PasswordSalt  | text       | соль пароля                           |
 | RefreshToken  | text       | refresh token пользователя            |
+| Rating        | int        | рейтинг пользователя                  |
 
 ### Duels
-| Поле          | Тип        | Описание                              |
-|---------------|------------|---------------------------------------|
-| Id            | serial PK  | id дуэли                              |
-| TaskId        | text       | id задачи (внешний, из Taski)         |
-| User1Id       | int FK     | id первого участника                  |
-| User2Id       | int FK     | id второго участника                  |
-| Status        | text       | статус дуэли                          |
-| WinnerId      | int? FK    | id победителя (или NULL)              |
-| StartTime     | timestamp  | время начала дуэли                    |
-| DeadlineTime  | timestamp  | время автоматического окончания дуэли |
-| EndTime       | timestamp? | время фактического окончания дуэли    |
+| Поле                   | Тип        | Описание                              |
+|------------------------|------------|---------------------------------------|
+| Id                     | serial PK  | id дуэли                              |
+| TaskId                 | text       | id задачи (внешний, из Taski)         |
+| User1Id                | int FK     | id первого участника                  |
+| User2Id                | int FK     | id второго участника                  |
+| Status                 | text       | статус дуэли                          |
+| WinnerId               | int? FK    | id победителя (или NULL)              |
+| StartTime              | timestamp  | время начала дуэли                    |
+| DeadlineTime           | timestamp  | время автоматического окончания дуэли |
+| EndTime                | timestamp? | время фактического окончания дуэли    |
+| User1RatingDelta       | int?       | дельта рейтинга первого участника     |
+| User2RatingDelta       | int?       | дельта рейтинга второго участника     |
 
 
 ### Submissions
