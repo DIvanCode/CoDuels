@@ -223,6 +223,57 @@ data:
 }
 ```
 
+### Получить текущую дуэль пользователя
+
+#### Запрос
+
+`GET /duels/current`
+
+#### Ответ
+
+Успех
+```json
+{
+    "id": 1,
+    "status": "InProgress",
+    "participants": [
+        {
+            "id": 1,
+            "nickname": "tourist",
+            "rating": 1500
+        },
+        {
+            "id": 2,
+            "nickname": "admin",
+            "rating": 1500
+        },
+    ],
+    "task_id": "7d971f50363cf0aebbd87d971f50363cf0aebbd8",
+    "start_time": "2025-10-20T20:54:21.996464",
+    "deadline_time": "2025-10-20T21:24:21.996464",
+    "rating_changes": {
+        "1": {
+            "Win": 1520,
+            "Draw": 1500,
+            "Lose": 1480
+        },
+        "2": {
+            "Win": 1520,
+            "Draw": 1500,
+            "Lose": 1480
+        }
+    }
+}
+```
+
+Ошибка
+```json
+{
+    "title": "ошибка",
+    "detail": "детальная ошибка" // опционально
+}
+```
+
 ### Получить информацию о дуэли
 
 #### Запрос
@@ -240,22 +291,68 @@ data:
 {
     "id": 1,
     "status": "InProgress",
-    "opponent_id": 2,
+    "participants": [
+        {
+            "id": 1,
+            "nickname": "tourist",
+            "rating": 1500
+        },
+        {
+            "id": 2,
+            "nickname": "admin",
+            "rating": 1500
+        },
+    ],
     "task_id": "7d971f50363cf0aebbd87d971f50363cf0aebbd8",
     "start_time": "2025-10-20T20:54:21.996464",
-    "deadline_time": "2025-10-20T21:24:21.996464"
+    "deadline_time": "2025-10-20T21:24:21.996464",
+    "rating_changes": {
+        "1": {
+            "Win": 1520,
+            "Draw": 1500,
+            "Lose": 1480
+        },
+        "2": {
+            "Win": 1520,
+            "Draw": 1500,
+            "Lose": 1480
+        }
+    }
 }
 
 // дуэль завершилась
 {
     "id": 1,
     "status": "Finished",
-    "opponent_id": 2,
-    "result": "Win", // или Lose, или Draw
+    "participants": [
+        {
+            "id": 1,
+            "nickname": "tourist",
+            "rating": 1500
+        },
+        {
+            "id": 2,
+            "nickname": "admin",
+            "rating": 1500
+        },
+    ],
     "task_id": "7d971f50363cf0aebbd87d971f50363cf0aebbd8",
     "start_time": "2025-10-20T20:54:21.996464",
     "deadline_time": "2025-10-20T21:24:21.996464",
-    "end_time": "2025-10-20T21:03:59.341261"
+    "winner_id": 1,
+    "end_time": "2025-10-20T21:03:59.341261",
+    "rating_changes": {
+        "1": {
+            "Win": 1520,
+            "Draw": 1500,
+            "Lose": 1480
+        },
+        "2": {
+            "Win": 1520,
+            "Draw": 1500,
+            "Lose": 1480
+        }
+    }
 }
 ```
 
@@ -271,31 +368,49 @@ data:
 
 #### Запрос
 
-`GET /duels`
+`GET /duels?userId={userId}`
+
+Пример:
+- `GET /duels?userId=1`
 
 #### Ответ
 
 Успех
 ```json
 [
-  {
-    "id": 1,
-    "status": "Finished",
-    "opponent_nickname": "tourist",
-    "winner_nickname": "admin",
-    "start_time": "2025-10-20T20:54:21.996464",
-    "end_time": "2025-10-20T21:03:59.341261",
-    "rating_delta": 20
-  },
-{
-    "id": 2,
-    "status": "Finished",
-    "opponent_nickname": "tourist",
-    "winner_nickname": "admin",
-    "start_time": "2025-10-20T20:54:21.996464",
-    "end_time": "2025-10-20T21:03:59.341261",
-    "rating_delta": -30
-  },
+    {
+        "id": 1,
+        "status": "Finished",
+        "participants": [
+            {
+                "id": 1,
+                "nickname": "tourist",
+                "rating": 1500
+            },
+            {
+                "id": 2,
+                "nickname": "admin",
+                "rating": 1500
+            },
+        ],
+        "task_id": "7d971f50363cf0aebbd87d971f50363cf0aebbd8",
+        "start_time": "2025-10-20T20:54:21.996464",
+        "deadline_time": "2025-10-20T21:24:21.996464",
+        "winner_id": 1,
+        "end_time": "2025-10-20T21:03:59.341261",
+        "rating_changes": {
+            "1": {
+                "Win": 1520,
+                "Draw": 1500,
+                "Lose": 1480
+            },
+            "2": {
+                "Win": 1520,
+                "Draw": 1500,
+                "Lose": 1480
+            }
+        }
+    }
 ]
 ```
 
@@ -479,8 +594,10 @@ data:
 | StartTime              | timestamp  | время начала дуэли                    |
 | DeadlineTime           | timestamp  | время автоматического окончания дуэли |
 | EndTime                | timestamp? | время фактического окончания дуэли    |
-| User1RatingDelta       | int?       | дельта рейтинга первого участника     |
-| User2RatingDelta       | int?       | дельта рейтинга второго участника     |
+| User1InitRating        | int        | начальный рейтинг первого участника   |
+| User1FinalRating       | int?       | финальный рейтинг первого участника   |
+| User2InitRating        | int        | начальный рейтинг второго участника   |
+| User2FinalRating       | int?       | финальный рейтинг второго участника   |
 
 
 ### Submissions
