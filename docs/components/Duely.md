@@ -253,14 +253,14 @@ data:
     "deadline_time": "2025-10-20T21:24:21.996464",
     "rating_changes": {
         "1": {
-            "Win": 1520,
-            "Draw": 1500,
-            "Lose": 1480
+            "Win": 20,
+            "Draw": 0,
+            "Lose": -20
         },
         "2": {
-            "Win": 1520,
-            "Draw": 1500,
-            "Lose": 1480
+            "Win": 20,
+            "Draw": 0,
+            "Lose": -20
         }
     }
 }
@@ -308,14 +308,14 @@ data:
     "deadline_time": "2025-10-20T21:24:21.996464",
     "rating_changes": {
         "1": {
-            "Win": 1520,
-            "Draw": 1500,
-            "Lose": 1480
+            "Win": 20,
+            "Draw": 0,
+            "Lose": -20
         },
         "2": {
-            "Win": 1520,
-            "Draw": 1500,
-            "Lose": 1480
+            "Win": 20,
+            "Draw": 0,
+            "Lose": -20
         }
     }
 }
@@ -343,14 +343,14 @@ data:
     "end_time": "2025-10-20T21:03:59.341261",
     "rating_changes": {
         "1": {
-            "Win": 1520,
-            "Draw": 1500,
-            "Lose": 1480
+            "Win": 20,
+            "Draw": 0,
+            "Lose": -20
         },
         "2": {
-            "Win": 1520,
-            "Draw": 1500,
-            "Lose": 1480
+            "Win": 20,
+            "Draw": 0,
+            "Lose": -20
         }
     }
 }
@@ -400,14 +400,14 @@ data:
         "end_time": "2025-10-20T21:03:59.341261",
         "rating_changes": {
             "1": {
-                "Win": 1520,
-                "Draw": 1500,
-                "Lose": 1480
+                "Win": 20,
+                "Draw": 0,
+                "Lose": -20
             },
             "2": {
-                "Win": 1520,
-                "Draw": 1500,
-                "Lose": 1480
+                "Win": 20,
+                "Draw": 0,
+                "Lose": -20
             }
         }
     }
