@@ -451,11 +451,11 @@ data:
 ### Запуск кода на своих входных данных
 
 #### Запрос
-POST /duels/{duel_id}/runs
+POST /runs
 
 ```json
 {
-    "solution": "print(input()[::-1])",
+    "code": "print(input()[::-1])",
     "language": "Python",
     "input": "hello"
 }
@@ -465,41 +465,14 @@ POST /duels/{duel_id}/runs
 Успех
 ```json
 {
-    "run_id": 1
+  "run_id": 1,
+  "code": "print(input()[::-1])",
+  "language": "Python",
+  "input": "hello",
+  "status": 0,
+  "output": null,
+  "error": null
 }
-```
-
-Ошибка
-```json
-{
-    "title": "ошибка",
-    "detail": "детальная ошибка" // опционально
-}
-```
-
-### Список запусков пользователя в дуэли
-
-#### Запрос
-GET /duels/{duel_id}/runs
-
-#### Ответ
-
-Успех
-```json
-[
-    {
-        "run_id": 1,
-        "status": "Queued",
-        "verdict": null,
-        "created_at": "2025-09-17T14:05:00Z"
-    },
-    {
-        "run_id": 2,
-        "status": "Done",
-        "verdict": "OK",
-        "created_at": "2025-09-17T14:12:00Z"
-    }
-]
 ```
 
 Ошибка
@@ -512,66 +485,53 @@ GET /duels/{duel_id}/runs
 
 ### Получить детальную информацию о запуске
 #### Запрос
-GET /duels/{duel_id}/runs/{run_id}
+GET /runs/{run_id}
 
 #### Ответ
 Успех
 ```json
-// запуск не начался
+// запуск не начался (ещё в очереди)
 {
-    "run_id": 1,
-    "status": "Queued",
-    "solution": "print(input()[::-1])",
-    "language": "Python",
-    "input": "hello",
-    "created_at": "2025-09-17T14:05:00Z"
+  "run_id": 1,
+  "status": 0,
+  "code": "print(input()[::-1])",
+  "language": "Python",
+  "input": "hello",
+  "output": null,
+  "error": null
 }
 
 // запуск в процессе
 {
-    "run_id": 1,
-    "status": "Running",
-    "solution": "print(input()[::-1])",
-    "language": "Python",
-    "input": "hello",
-    "created_at": "2025-09-17T14:05:00Z"
+  "run_id": 1,
+  "status": 1,
+  "code": "print(input()[::-1])",
+  "language": "Python",
+  "input": "hello",
+  "output": null,
+  "error": null
 }
 
-// запуск завершён успешно, есть вывод программы
+// запуск завершён успешно
 {
-    "run_id": 1,
-    "status": "Done",
-    "verdict": "OK",
-    "output": "olleh",
-    "solution": "print(input()[::-1])",
-    "language": "Python",
-    "input": "hello",
-    "created_at": "2025-09-17T14:05:00Z"
+  "run_id": 1,
+  "status": 2,
+  "code": "print(input()[::-1])",
+  "language": "Python",
+  "input": "hello",
+  "output": "olleh\n",
+  "error": null
 }
 
 // запуск завершён с ошибкой выполнения
 {
-    "run_id": 1,
-    "status": "Done",
-    "verdict": "RE",
-    "error": "Traceback (most recent call last): ...",
-    "output": "",
-    "solution": "print(input()[::-1])",
-    "language": "Python",
-    "input": "hello",
-    "created_at": "2025-09-17T14:05:00Z"
-}
-
-// запуск завершён с ошибкой компиляции
-{
-    "run_id": 1,
-    "status": "Done",
-    "verdict": "CE",
-    "error": "ошибка компиляции бла-бла-бла",
-    "solution": "print(input()[::-1])",
-    "language": "Cpp",
-    "input": "hello",
-    "created_at": "2025-09-17T14:05:00Z"
+  "run_id": 1,
+  "status": 2,
+  "code": "print(input()[::-1])",
+  "language": "Python",
+  "input": "hello",
+  "output": "",
+  "error": "RE"
 }
 ```
 
@@ -627,14 +587,12 @@ GET /duels/{duel_id}/runs/{run_id}
 | Поле       | Тип        | Описание                                   |
 |------------|------------|--------------------------------------------|
 | Id         | serial PK  | id запуска кода                            |
-| DuelId     | int FK     | id дуэли                                   |
 | UserId     | int FK     | id пользователя                            |
 | Code       | text       | код решения                                |
 | Language   | text       | язык решения                               |
 | Input      | text       | пользовательские входные данные            |
 | CreatedAt  | timestamp  | время создания запуска                     |
-| Status     | text       | статус выполнения (Queued/Running/Done)    |
-| Verdict    | text       | результат выполнения (OK/RE/CE/TL/ML/ERROR)|
-| Output     | text       | вывод программы (stdout)                   |
-| Error      | text       | текст ошибки (stderr/compile error)        |
-| ExecutionId| text       | id выполнения в Exesh                      |
+| Status     | int        | 0 = Queued, 1 = Running, 2 = Done          |
+| Output     | text?      | вывод программы (stdout)                   |
+| Error      | text?      | текст ошибки (stderr/compile error)        |
+| ExecutionId| text?      | id выполнения в Exesh                      |
