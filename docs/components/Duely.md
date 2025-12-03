@@ -473,21 +473,31 @@ data:
         "submission_id": 1,
         "status": "Queued",
         "language": "Python",
-        "created_at": "2025-09-17T14:05:00Z"
+        "created_at": "2025-09-17T14:05:00Z",
+        "is_upsolve": false
     },
     {
         "submission_id": 2,
         "status": "Running",
         "language": "Python",
-        "created_at": "2025-09-17T14:12:00Z"
+        "created_at": "2025-09-17T14:12:00Z",
+        "is_upsolve": false
     },
     {
         "submission_id": 3,
         "status": "Done",
         "verdict": "Accepted",
         "language": "Python",
-        "created_at": "2025-09-17T14:12:00Z"
-    }
+        "created_at": "2025-09-17T14:12:00Z",
+        "is_upsolve": false
+    },
+    {
+        "submission_id": 4,
+        "status": "Queued",
+        "language": "Python",
+        "created_at": "2025-09-17T14:55:00Z",
+        "is_upsolve": true // посылка отправлена после конца дуэли => дорешка
+    } 
 ]
 ```
 
@@ -518,7 +528,8 @@ data:
     "status": "Queued",
     "solution": "print(sum(map(int, input().split())))",
     "language": "Python",
-    "created_at": "2025-09-17T14:05:00Z"
+    "created_at": "2025-09-17T14:05:00Z",
+    "is_upsolve": false
 }
 
 // тестирование в процессе
@@ -527,7 +538,8 @@ data:
     "status": "Running",
     "solution": "print(sum(map(int, input().split())))",
     "language": "Python",
-    "created_at": "2025-09-17T14:05:00Z"
+    "created_at": "2025-09-17T14:05:00Z",
+    "is_upsolve": false
 }
 
 // тестирование в процессе и пользователю можно отобразить "message"
@@ -537,7 +549,8 @@ data:
     "message": "Test 1 passed",
     "solution": "print(sum(map(int, input().split())))",
     "language": "Python",
-    "created_at": "2025-09-17T14:05:00Z"
+    "created_at": "2025-09-17T14:05:00Z",
+    "is_upsolve": false
 }
 
 // тестирование завершено
@@ -547,7 +560,8 @@ data:
     "verdict": "Accepted",
     "solution": "print(sum(map(int, input().split())))",
     "language": "Python",
-    "created_at": "2025-09-17T14:05:00Z"
+    "created_at": "2025-09-17T14:05:00Z",
+    "is_upsolve": false
 }
 
 // тестирование завершено и пользователю можно отобразить "message"
@@ -558,7 +572,8 @@ data:
     "message": "ошибка...",
     "solution": "print(sum(map(int, input().split())))",
     "language": "Python",
-    "created_at": "2025-09-17T14:05:00Z"
+    "created_at": "2025-09-17T14:05:00Z",
+    "is_upsolve": false
 }
 ```
 
@@ -612,3 +627,4 @@ data:
 | Status      | text       | статус тестирования                     |
 | Verdict     | text       | вердикт тестирования                    |
 | Message     | text       | сообщение для пользователя              |
+| IsUpsolve   | bool       | индикатор дорешки                       |
