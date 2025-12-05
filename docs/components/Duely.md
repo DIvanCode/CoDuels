@@ -469,7 +469,7 @@ POST /runs
   "code": "print(input()[::-1])",
   "language": "Python",
   "input": "hello",
-  "status": 0,
+  "status": "Queued",
   "output": null,
   "error": null
 }
@@ -493,7 +493,7 @@ GET /runs/{run_id}
 // запуск не начался (ещё в очереди)
 {
   "run_id": 1,
-  "status": 0,
+  "status": "Queued",
   "code": "print(input()[::-1])",
   "language": "Python",
   "input": "hello",
@@ -504,7 +504,7 @@ GET /runs/{run_id}
 // запуск в процессе
 {
   "run_id": 1,
-  "status": 1,
+  "status": "Running",
   "code": "print(input()[::-1])",
   "language": "Python",
   "input": "hello",
@@ -515,7 +515,7 @@ GET /runs/{run_id}
 // запуск завершён успешно
 {
   "run_id": 1,
-  "status": 2,
+  "status": "Done",
   "code": "print(input()[::-1])",
   "language": "Python",
   "input": "hello",
@@ -526,7 +526,7 @@ GET /runs/{run_id}
 // запуск завершён с ошибкой выполнения
 {
   "run_id": 1,
-  "status": 2,
+  "status": "Done",
   "code": "print(input()[::-1])",
   "language": "Python",
   "input": "hello",
@@ -596,3 +596,4 @@ GET /runs/{run_id}
 | Output     | text?      | вывод программы (stdout)                   |
 | Error      | text?      | текст ошибки (stderr/compile error)        |
 | ExecutionId| text?      | id выполнения в Exesh                      |
+
