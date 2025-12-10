@@ -156,7 +156,8 @@
 ```json
 {
     "id": 1,
-    "nickname": "tourist"
+    "nickname": "tourist",
+    "rating": 3000
 }
 ```
 
@@ -183,7 +184,8 @@
 ```json
 {
     "id": 1,
-    "nickname": "tourist"
+    "nickname": "tourist",
+    "rating": 3000
 }
 ```
 
@@ -221,6 +223,57 @@ data:
 }
 ```
 
+### Получить текущую дуэль пользователя
+
+#### Запрос
+
+`GET /duels/current`
+
+#### Ответ
+
+Успех
+```json
+{
+    "id": 1,
+    "status": "InProgress",
+    "participants": [
+        {
+            "id": 1,
+            "nickname": "tourist",
+            "rating": 1500
+        },
+        {
+            "id": 2,
+            "nickname": "admin",
+            "rating": 1500
+        },
+    ],
+    "task_id": "7d971f50363cf0aebbd87d971f50363cf0aebbd8",
+    "start_time": "2025-10-20T20:54:21.996464",
+    "deadline_time": "2025-10-20T21:24:21.996464",
+    "rating_changes": {
+        "1": {
+            "Win": 20,
+            "Draw": 0,
+            "Lose": -20
+        },
+        "2": {
+            "Win": 20,
+            "Draw": 0,
+            "Lose": -20
+        }
+    }
+}
+```
+
+Ошибка
+```json
+{
+    "title": "ошибка",
+    "detail": "детальная ошибка" // опционально
+}
+```
+
 ### Получить информацию о дуэли
 
 #### Запрос
@@ -238,22 +291,68 @@ data:
 {
     "id": 1,
     "status": "InProgress",
-    "opponent_id": 2,
+    "participants": [
+        {
+            "id": 1,
+            "nickname": "tourist",
+            "rating": 1500
+        },
+        {
+            "id": 2,
+            "nickname": "admin",
+            "rating": 1500
+        },
+    ],
     "task_id": "7d971f50363cf0aebbd87d971f50363cf0aebbd8",
     "start_time": "2025-10-20T20:54:21.996464",
-    "deadline_time": "2025-10-20T21:24:21.996464"
+    "deadline_time": "2025-10-20T21:24:21.996464",
+    "rating_changes": {
+        "1": {
+            "Win": 20,
+            "Draw": 0,
+            "Lose": -20
+        },
+        "2": {
+            "Win": 20,
+            "Draw": 0,
+            "Lose": -20
+        }
+    }
 }
 
 // дуэль завершилась
 {
     "id": 1,
     "status": "Finished",
-    "opponent_id": 2,
-    "result": "Win", // или Lose, или Draw
+    "participants": [
+        {
+            "id": 1,
+            "nickname": "tourist",
+            "rating": 1500
+        },
+        {
+            "id": 2,
+            "nickname": "admin",
+            "rating": 1500
+        },
+    ],
     "task_id": "7d971f50363cf0aebbd87d971f50363cf0aebbd8",
     "start_time": "2025-10-20T20:54:21.996464",
     "deadline_time": "2025-10-20T21:24:21.996464",
-    "end_time": "2025-10-20T21:03:59.341261"
+    "winner_id": 1,
+    "end_time": "2025-10-20T21:03:59.341261",
+    "rating_changes": {
+        "1": {
+            "Win": 20,
+            "Draw": 0,
+            "Lose": -20
+        },
+        "2": {
+            "Win": 20,
+            "Draw": 0,
+            "Lose": -20
+        }
+    }
 }
 ```
 
@@ -269,29 +368,49 @@ data:
 
 #### Запрос
 
-`GET /duels`
+`GET /duels?userId={userId}`
+
+Пример:
+- `GET /duels?userId=1`
 
 #### Ответ
 
 Успех
 ```json
 [
-  {
-    "id": 1,
-    "status": "Finished",
-    "opponent_nickname": "tourist",
-    "winner_nickname": "admin",
-    "start_time": "2025-10-20T20:54:21.996464",
-    "end_time": "2025-10-20T21:03:59.341261"
-  },
-  {
-    "id": 2,
-    "status": "InProgress",
-    "opponent_nickname": "tourist",
-    "winner_nickname": null,
-    "start_time": "2025-10-21T10:15:00",
-    "end_time": null
-  }
+    {
+        "id": 1,
+        "status": "Finished",
+        "participants": [
+            {
+                "id": 1,
+                "nickname": "tourist",
+                "rating": 1500
+            },
+            {
+                "id": 2,
+                "nickname": "admin",
+                "rating": 1500
+            },
+        ],
+        "task_id": "7d971f50363cf0aebbd87d971f50363cf0aebbd8",
+        "start_time": "2025-10-20T20:54:21.996464",
+        "deadline_time": "2025-10-20T21:24:21.996464",
+        "winner_id": 1,
+        "end_time": "2025-10-20T21:03:59.341261",
+        "rating_changes": {
+            "1": {
+                "Win": 20,
+                "Draw": 0,
+                "Lose": -20
+            },
+            "2": {
+                "Win": 20,
+                "Draw": 0,
+                "Lose": -20
+            }
+        }
+    }
 ]
 ```
 
@@ -353,19 +472,32 @@ data:
     {
         "submission_id": 1,
         "status": "Queued",
-        "created_at": "2025-09-17T14:05:00Z"
+        "language": "Python",
+        "created_at": "2025-09-17T14:05:00Z",
+        "is_upsolve": false
     },
     {
         "submission_id": 2,
         "status": "Running",
-        "created_at": "2025-09-17T14:12:00Z"
+        "language": "Python",
+        "created_at": "2025-09-17T14:12:00Z",
+        "is_upsolve": false
     },
     {
         "submission_id": 3,
         "status": "Done",
         "verdict": "Accepted",
-        "created_at": "2025-09-17T14:12:00Z"
-    }
+        "language": "Python",
+        "created_at": "2025-09-17T14:12:00Z",
+        "is_upsolve": false
+    },
+    {
+        "submission_id": 4,
+        "status": "Queued",
+        "language": "Python",
+        "created_at": "2025-09-17T14:55:00Z",
+        "is_upsolve": true // посылка отправлена после конца дуэли => дорешка
+    } 
 ]
 ```
 
@@ -396,7 +528,8 @@ data:
     "status": "Queued",
     "solution": "print(sum(map(int, input().split())))",
     "language": "Python",
-    "submit_time": "2025-09-17T14:05:00Z"
+    "created_at": "2025-09-17T14:05:00Z",
+    "is_upsolve": false
 }
 
 // тестирование в процессе
@@ -405,7 +538,8 @@ data:
     "status": "Running",
     "solution": "print(sum(map(int, input().split())))",
     "language": "Python",
-    "submit_time": "2025-09-17T14:05:00Z"
+    "created_at": "2025-09-17T14:05:00Z",
+    "is_upsolve": false
 }
 
 // тестирование в процессе и пользователю можно отобразить "message"
@@ -415,7 +549,8 @@ data:
     "message": "Test 1 passed",
     "solution": "print(sum(map(int, input().split())))",
     "language": "Python",
-    "submit_time": "2025-09-17T14:05:00Z"
+    "created_at": "2025-09-17T14:05:00Z",
+    "is_upsolve": false
 }
 
 // тестирование завершено
@@ -425,7 +560,8 @@ data:
     "verdict": "Accepted",
     "solution": "print(sum(map(int, input().split())))",
     "language": "Python",
-    "submit_time": "2025-09-17T14:05:00Z"
+    "created_at": "2025-09-17T14:05:00Z",
+    "is_upsolve": false
 }
 
 // тестирование завершено и пользователю можно отобразить "message"
@@ -436,7 +572,8 @@ data:
     "message": "ошибка...",
     "solution": "print(sum(map(int, input().split())))",
     "language": "Python",
-    "submit_time": "2025-09-17T14:05:00Z"
+    "created_at": "2025-09-17T14:05:00Z",
+    "is_upsolve": false
 }
 ```
 
@@ -554,19 +691,24 @@ GET /runs/{run_id}
 | PasswordHash  | text       | хеш пароля                            |
 | PasswordSalt  | text       | соль пароля                           |
 | RefreshToken  | text       | refresh token пользователя            |
+| Rating        | int        | рейтинг пользователя                  |
 
 ### Duels
-| Поле          | Тип        | Описание                              |
-|---------------|------------|---------------------------------------|
-| Id            | serial PK  | id дуэли                              |
-| TaskId        | text       | id задачи (внешний, из Taski)         |
-| User1Id       | int FK     | id первого участника                  |
-| User2Id       | int FK     | id второго участника                  |
-| Status        | text       | статус дуэли                          |
-| WinnerId      | int? FK    | id победителя (или NULL)              |
-| StartTime     | timestamp  | время начала дуэли                    |
-| DeadlineTime  | timestamp  | время автоматического окончания дуэли |
-| EndTime       | timestamp? | время фактического окончания дуэли    |
+| Поле                   | Тип        | Описание                              |
+|------------------------|------------|---------------------------------------|
+| Id                     | serial PK  | id дуэли                              |
+| TaskId                 | text       | id задачи (внешний, из Taski)         |
+| User1Id                | int FK     | id первого участника                  |
+| User2Id                | int FK     | id второго участника                  |
+| Status                 | text       | статус дуэли                          |
+| WinnerId               | int? FK    | id победителя (или NULL)              |
+| StartTime              | timestamp  | время начала дуэли                    |
+| DeadlineTime           | timestamp  | время автоматического окончания дуэли |
+| EndTime                | timestamp? | время фактического окончания дуэли    |
+| User1InitRating        | int        | начальный рейтинг первого участника   |
+| User1FinalRating       | int?       | финальный рейтинг первого участника   |
+| User2InitRating        | int        | начальный рейтинг второго участника   |
+| User2FinalRating       | int?       | финальный рейтинг второго участника   |
 
 
 ### Submissions
@@ -581,6 +723,7 @@ GET /runs/{run_id}
 | Status      | text       | статус тестирования                     |
 | Verdict     | text       | вердикт тестирования                    |
 | Message     | text       | сообщение для пользователя              |
+| IsUpsolve   | bool       | индикатор дорешки                       |
 
 
 ### UserCodeRuns
@@ -596,4 +739,3 @@ GET /runs/{run_id}
 | Output     | text?      | вывод программы (stdout)                   |
 | Error      | text?      | текст ошибки (stderr/compile error)        |
 | ExecutionId| text?      | id выполнения в Exesh                      |
-
