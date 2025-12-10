@@ -585,6 +585,102 @@ data:
 }
 ```
 
+### Запуск кода на своих входных данных
+
+#### Запрос
+POST /runs
+
+```json
+{
+    "code": "print(input()[::-1])",
+    "language": "Python",
+    "input": "hello"
+}
+```
+
+#### Ответ
+Успех
+```json
+{
+  "run_id": 1,
+  "code": "print(input()[::-1])",
+  "language": "Python",
+  "input": "hello",
+  "status": "Queued",
+  "output": null,
+  "error": null
+}
+```
+
+Ошибка
+```json
+{
+    "title": "ошибка",
+    "detail": "детальная ошибка" // опционально
+}
+```
+
+### Получить детальную информацию о запуске
+#### Запрос
+GET /runs/{run_id}
+
+#### Ответ
+Успех
+```json
+// запуск не начался (ещё в очереди)
+{
+  "run_id": 1,
+  "status": "Queued",
+  "code": "print(input()[::-1])",
+  "language": "Python",
+  "input": "hello",
+  "output": null,
+  "error": null
+}
+
+// запуск в процессе
+{
+  "run_id": 1,
+  "status": "Running",
+  "code": "print(input()[::-1])",
+  "language": "Python",
+  "input": "hello",
+  "output": null,
+  "error": null
+}
+
+// запуск завершён успешно
+{
+  "run_id": 1,
+  "status": "Done",
+  "code": "print(input()[::-1])",
+  "language": "Python",
+  "input": "hello",
+  "output": "olleh\n",
+  "error": null
+}
+
+// запуск завершён с ошибкой выполнения
+{
+  "run_id": 1,
+  "status": "Done",
+  "code": "print(input()[::-1])",
+  "language": "Python",
+  "input": "hello",
+  "output": "",
+  "error": "RE"
+}
+```
+
+Ошибка
+```json
+{
+    "title": "ошибка",
+    "detail": "детальная ошибка" // опционально
+}
+```
+
+
 ## Схема данных
 
 ### Users
@@ -628,3 +724,18 @@ data:
 | Verdict     | text       | вердикт тестирования                    |
 | Message     | text       | сообщение для пользователя              |
 | IsUpsolve   | bool       | индикатор дорешки                       |
+
+
+### UserCodeRuns
+| Поле       | Тип        | Описание                                   |
+|------------|------------|--------------------------------------------|
+| Id         | serial PK  | id запуска кода                            |
+| UserId     | int FK     | id пользователя                            |
+| Code       | text       | код решения                                |
+| Language   | text       | язык решения                               |
+| Input      | text       | пользовательские входные данные            |
+| CreatedAt  | timestamp  | время создания запуска                     |
+| Status     | int        | 0 = Queued, 1 = Running, 2 = Done          |
+| Output     | text?      | вывод программы (stdout)                   |
+| Error      | text?      | текст ошибки (stderr/compile error)        |
+| ExecutionId| text?      | id выполнения в Exesh                      |
