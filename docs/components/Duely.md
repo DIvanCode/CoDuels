@@ -157,7 +157,8 @@
 {
     "id": 1,
     "nickname": "tourist",
-    "rating": 3000
+    "rating": 3000,
+    "created_at":"2025-12-15T09:49:48.169061"
 }
 ```
 
@@ -185,7 +186,8 @@
 {
     "id": 1,
     "nickname": "tourist",
-    "rating": 3000
+    "rating": 3000,
+    "created_at":"2025-12-15T09:49:48.169061"
 }
 ```
 
@@ -240,12 +242,14 @@ data:
         {
             "id": 1,
             "nickname": "tourist",
-            "rating": 1500
+            "rating": 1500,
+            "created_at":"2025-12-15T09:49:48.169061"
         },
         {
             "id": 2,
             "nickname": "admin",
-            "rating": 1500
+            "rating": 1500,
+            "created_at":"2025-12-15T09:49:48.169061"
         },
     ],
     "task_id": "7d971f50363cf0aebbd87d971f50363cf0aebbd8",
@@ -295,12 +299,14 @@ data:
         {
             "id": 1,
             "nickname": "tourist",
-            "rating": 1500
+            "rating": 1500,
+            "created_at":"2025-12-15T09:49:48.169061"
         },
         {
             "id": 2,
             "nickname": "admin",
-            "rating": 1500
+            "rating": 1500,
+            "created_at":"2025-12-15T09:49:48.169061"
         },
     ],
     "task_id": "7d971f50363cf0aebbd87d971f50363cf0aebbd8",
@@ -328,12 +334,14 @@ data:
         {
             "id": 1,
             "nickname": "tourist",
-            "rating": 1500
+            "rating": 1500,
+            "created_at":"2025-12-15T09:49:48.169061"
         },
         {
             "id": 2,
             "nickname": "admin",
-            "rating": 1500
+            "rating": 1500,
+            "created_at":"2025-12-15T09:49:48.169061"
         },
     ],
     "task_id": "7d971f50363cf0aebbd87d971f50363cf0aebbd8",
@@ -385,12 +393,14 @@ data:
             {
                 "id": 1,
                 "nickname": "tourist",
-                "rating": 1500
+                "rating": 1500,
+                "created_at":"2025-12-15T09:49:48.169061"
             },
             {
                 "id": 2,
                 "nickname": "admin",
-                "rating": 1500
+                "rating": 1500,
+                "created_at":"2025-12-15T09:49:48.169061"
             },
         ],
         "task_id": "7d971f50363cf0aebbd87d971f50363cf0aebbd8",
@@ -692,6 +702,7 @@ GET /runs/{run_id}
 | PasswordSalt  | text       | соль пароля                           |
 | RefreshToken  | text       | refresh token пользователя            |
 | Rating        | int        | рейтинг пользователя                  |
+| CreatedAt     | timestamp  | время создания пользователя           |
 
 ### Duels
 | Поле                   | Тип        | Описание                              |
