@@ -2,7 +2,7 @@
 
 ## Компоненты
 
-<img src="architecture.png" width="800px" alt="https://miro.com/app/board/uXjVJcoEORo=/">
+<img src="architecture.jpg" width="800px" alt="https://miro.com/app/board/uXjVJcoEORo=/">
 
 Система построена по микросервисной архитектуре и состоит из трёх ключевых компонентов:
 1. Duely - управление пользователями и дуэлями.
