@@ -122,3 +122,7 @@ sequenceDiagram
     Kafka-->>Duely: Получайте обновление статуса
     Duely->>Client: Обновление статуса (выполнение кода окончено)
 ```
+
+## Деплоймент
+
+<img src="deployment.png" width="800px">
