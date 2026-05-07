@@ -1,0 +1,9 @@
+*
+!.gitignore
+!Makefile
+!slides.tex
+!slides.pdf
+!common/
+!common/**
+!images/
+!images/**

@@ -4,7 +4,7 @@
 
 ## Компоненты
 
-<img src="architecture.png" width="800px" alt="https://unidraw.io/app/board/a23e3010995136d9ae5f?xyz=-921%2C238%2C0.68">
+<img src="architecture.png" width="800px" alt="https://unidraw.io/app/board/a23e3010995136d9ae5f?xyz=-2083%2C212%2C1.15">
 
 Exesh состоит из двух компонентов:
 - Coordinator - координация выполнения джоб
