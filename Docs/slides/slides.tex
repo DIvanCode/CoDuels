@@ -188,12 +188,7 @@
 
 \small
     \begin{equation*}\label{eq:priority}
-    priority(T) =
-        \sqrt{
-            \left(\frac{T - T_{start}}{T_{total}}\right)^2
-            +
-            \alpha \cdot \left(\frac{T_{total} - T_{done}}{T_{total}}\right)^2
-        }
+    priority(T) = \frac{T - T_{start}}{T_{total}} + \alpha \cdot \frac{T_{total} - T_{done}}{T_{total}}
     \end{equation*}
 
     \begin{itemize}
