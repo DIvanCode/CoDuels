@@ -1,0 +1,337 @@
+\documentclass[14pt,aspectratio=169,hyperref={pdftex,unicode},xcolor=dvipsnames]{beamer}
+\usepackage[english,russian]{babel}
+\usepackage[utf8x]{inputenc}
+\usepackage[T2A]{fontenc}
+\usepackage{cmap}
+\usepackage{paratype}
+\usepackage{minted} % для примеров кода (требует параметра -shell-escape)
+
+\usetheme{metropolis}
+\usefonttheme[]{professionalfonts}  % запрещаем beamer'у перезаписывать мат. шрифты
+\metroset{numbering=fraction}
+\metroset{subsectionpage=progressbar}
+
+\setbeamercolor{frametitle}{fg=black}
+\setbeamertemplate{frametitle}
+{
+ \vspace{3mm}\insertframetitle\par
+}
+\setbeamertemplate{title separator}{}
+\setbeamertemplate{footnote separator}{}
+
+
+\usebackgroundtemplate{\includegraphics[width=\paperwidth,height=\paperheight]{./common/background_white.jpg}}
+
+\logo{\vspace{-1.2cm}\includegraphics[width=6mm]{./common/short-v.pdf}\hspace*{1.08\textwidth}}
+
+\institute
+{
+  \begin{columns}
+    \begin{column}{1.5cm}
+    \includegraphics[height=15mm,keepaspectratio]{./common/math-cs.pdf}
+    \end{column}
+    \begin{column}{4cm}
+          Факультет математики и компьютерных наук СПбГУ
+    \end{column}
+  \end{columns}
+}
+
+
+\begin{document}
+
+\begin{frame}[plain]
+  \begin{center}
+    \textbf{Иван Добрынин}
+
+    {\Large\textbf{Разработка комплекса информационных систем для проведения соревнований и тренировок по спортивному программированию в формате дуэли}}
+
+    Выпускная квалификационная работа
+
+    {\small Научный руководитель: И.\,С.\,Казменко}
+
+    07.05.2026
+  \end{center}
+
+
+  \begin{columns}
+    \begin{column}{1cm}
+    \includegraphics[height=15mm,keepaspectratio]{./common/math-cs.pdf}
+    \end{column}
+    \begin{column}{10cm}
+      \small
+          Факультет математики и~компьютерных наук СПбГУ\\
+          Программа <<Современное программирование>>
+    \end{column}
+  \end{columns}
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{Введение в предметную область}
+
+% Спортивное программирование в наше время приобретает всё бОльшую популярность.
+% Для решения задачи требуется написать код на одном из разрешённых языков программирования,
+% который будет обрабатывать входные данные и выдавать результат в соответствии с условием задачи.
+% Формат дуэли представляет собой соревнование между двумя участниками,
+% которые одновременно решают одну и ту же задачу и стараются сделать это быстрее друг друга.
+
+\begin{center}
+\includegraphics[width=13cm]{images/duel.png}
+\end{center}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Существующие решения и их недостатки}
+
+% Существуют различные платформы для решения задач по спортивному программированию,
+% такие как Codeforces, LeetCode и Codebattle.
+% Однако, эти платформы не всегда предоставляют требуемые возможности, например:
+% - проводить дуэли и турниры по собственным правилам,
+% - использовать собственные задачи,
+% - возможность использовать нестандартные форматы задач,
+% - проводить тренировки и соревнования в офлайн-режиме по локальной сети,
+% - анализировать поведение участников во время участия в дуэли.
+
+\centering
+\begin{tabular}{lccc}
+    Критерий & \includegraphics[height=0.5cm]{images/codeforces_logo.png} & \includegraphics[height=0.5cm]{images/leetcode_logo.png} & \includegraphics[height=0.5cm]{images/codebattle_logo.png} \\
+\hline\hline
+    Формат дуэлей & $-$ & $-$ & $+$ \\
+    Конфигурация правил & $-$ & $-$ & $\pm$ \\
+    Свои задачи & $+$ & $\pm$ & $\pm$ \\
+    Нестандартные типы задач & $-$ & $-$ & $-$ \\
+    Офлайн-режим & $+$ & $-$ & $-$ \\
+    Анализ поведения & $-$ & $-$ & $-$ \\
+\end{tabular}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Постановка задачи}
+
+\begin{enumerate}
+\item Спроектировать архитектуру системы, позволяющую проводить дуэли по спортивному программированию.
+\item Разработать масштабируемую тестирующую систему для автоматической проверки решений пользователей с параллельным исполнением и эффективным использованием вычислительных ресурсов.
+\item Реализовать программный код всех компонентов системы и взаимодействие между ними.
+\item Исследовать подход к обнаружению подозрительных участников на основе анализа поведения в сессии дуэли.
+\end{enumerate}
+
+\end{frame}
+
+\begin{frame}{Микросервисная архитектура системы}
+
+\begin{center}
+\includegraphics[width=14cm]{images/architecture.png}
+\end{center}
+
+\end{frame}
+
+\begin{frame}{Схема асинхронного процесса тестирования}
+
+\begin{center}
+\includegraphics[width=8cm]{images/pipeline_testing.png}
+\end{center}
+
+\end{frame}
+
+\begin{frame}{Распределённое исполнение графа команд}
+
+% Job --- атомарная команда, которая может быть выполнена на одном из исполнителей.
+% Artifact --- результат выполнения Job, который может быть использован другими Jobs.
+% Execution --- граф команд, который описывает зависимости между Jobs, определяя порядок их выполнения.
+
+\begin{center}
+\includegraphics[width=14cm]{images/execution_graph.png}
+\end{center}
+
+\end{frame}
+
+\begin{frame}{Архитектура Exesh на основе orchestration-модели}
+
+\begin{center}
+\includegraphics[width=10cm]{images/architecture_exesh.png}
+\end{center}
+
+\end{frame}
+
+\begin{frame}{Хранение, кэширование и передача файлов между компонентами системы}
+
+\small
+    \textbf{filestorage} --- библиотека на Go:
+    \begin{itemize}
+    \item Абстракция над файловой системой.
+    \item Кэширование файлов для повторного использования.
+    \item Передача файлов между компонентами в сжатом виде.
+    \item Автоматическая очистка неиспользуемых файлов.
+    \end{itemize}
+
+\end{frame}
+
+\begin{frame}{Задача 1: честное распределение ресурсов для одновременного исполнения набора Execution}
+
+% Картинка, которая иллюстрирует проблему. Есть набор Executions.
+% Каждый из них начал исполнение в своё время и имеет набор Jobs, которые имеют ожидаемое время выполнения.
+
+\begin{center}
+\includegraphics[width=12cm]{images/executions_problem.png}
+\end{center}
+
+\end{frame}
+
+\begin{frame}{Задача 1: честное распределение ресурсов для одновременного исполнения набора Execution}
+
+% Формула вычисления Priority,
+% которая определяет приоритет исполнения каждого Execution в любой момент времени,
+% а также описание всех параметров, которые в ней используются.
+
+\small
+    \begin{equation*}\label{eq:priority}
+    priority(T) =
+        \sqrt{
+            \left(\frac{T - T_{start}}{T_{total}}\right)^2
+            +
+            \alpha \cdot \left(\frac{T_{total} - T_{done}}{T_{total}}\right)^2
+        }
+    \end{equation*}
+
+    \begin{itemize}
+    \item $T_{start}$ --- время начала исполнения Execution.
+    \item $T_{total}$ --- общее ожидаемое время исполнения Execution.
+    \item $T_{done}$ --- общее ожидаемое время уже исполненных Jobs.
+    \item $\alpha$ --- определяет влияние реального времени исполнения и влияние ожидаемого оставшегося времени исполнения.
+    \end{itemize}
+
+\end{frame}
+
+\begin{frame}{Задача 1: честное распределение ресурсов для одновременного исполнения набора Execution}
+
+% Картинка, которая иллюстрирует решение задачи.
+% На ней показано, как меняется распределение ресурсов между Executions в зависимости от их приоритета.
+
+\begin{center}
+\includegraphics[width=10cm]{images/executions_priority.png}
+\includegraphics[width=10cm]{images/executions_progress.png}
+\end{center}
+
+\end{frame}
+
+\begin{frame}{Задача 2: распределение Jobs по исполнителям для максимизации утилизации ресурсов}
+
+\begin{center}
+\includegraphics[width=10cm]{images/jobs_problem.png}
+\end{center}
+
+\end{frame}
+
+\begin{frame}{Задача 2: распределение Jobs по исполнителям для максимизации утилизации ресурсов}
+
+\begin{center}
+\includegraphics[width=10cm]{images/jobs_algorithm.png}
+\end{center}
+
+\end{frame}
+
+\begin{frame}[fragile]{Задача 2: распределение Jobs по исполнителям для максимизации утилизации ресурсов}
+
+\begin{minted}{python}
+def schedule(jobs):
+    jobs.sort(key=job.priority)
+    for job in jobs:
+        if can_start_now(job):
+            start(job)
+            break
+        elif len(promised_jobs) < limit:
+            start_time = get_start_time(job)
+            promise(job, start_time)
+
+\end{minted}
+
+\end{frame}
+
+\begin{frame}{Безопасный запуск пользовательского кода в изолированном окружении}
+
+\small
+    \textbf{isolate} --- утилита на C от ioi:
+    \begin{itemize}
+    \item Изоляция процессов для предотвращения доступа к ресурсам других процессов.
+    \item Ограничение ресурсов, доступных для выполнения кода.
+    \item Запрет взаимодействия с сетью.
+    \item Лёгкий вес и высокая производительность.
+    \end{itemize}
+
+\end{frame}
+
+\begin{frame}{Задача 3: анализ подозрительности поведения участника при участии в дуэли}
+
+\small
+    В процессе участия в дуэли собираются события следующих видов:
+    \begin{itemize}
+    \item Ввод кода, удаление кода, перемещение курсора.
+    \item Вставка кода из буфера обмена.
+    \item Запуск решения на тестах из условия и произвольных тестах.
+    \item Отправка решения на проверку.
+    \end{itemize}
+
+\end{frame}
+
+\begin{frame}{Задача 3: анализ подозрительности поведения участника при участии в дуэли}
+
+\small
+    Список событий трансформируется в вектор признаков, таких как:
+    \begin{itemize}
+    \item Средняя скорость ввода кода, разброс.
+    \item Количество вставок кода из буфера обмена, средняя длина вставляемого фрагмента.
+    \item Частота изменения вставленного кода.
+    \item Количество значимых перемещений курсора.
+    \item Количество запусков решения и отправок на проверку.
+    \end{itemize}
+
+\end{frame}
+
+\begin{frame}{Задача 3: анализ подозрительности поведения участника при участии в дуэли}
+
+\small
+    По вектору признаков модель машинного обучения предсказывает степень подозрительности поведения.
+    \begin{itemize}
+    \item Базовая модель --- логистическая регрессия.
+    \item Основная модель --- случайный лес.
+    \end{itemize}
+
+    Сбор обучающей выборки:
+    \begin{itemize}
+    \item Самостоятельное участие в дуэли с различными стратегиями.
+    \item Проведение турнира на занятии кружка по спортивному программированию СПбГУ.
+    \end{itemize}
+
+\end{frame}
+
+\begin{frame}{Задача 3: анализ подозрительности поведения участника при участии в дуэли}
+
+\small
+    Здесь должны быть какие-нибудь графики, которые иллюстрируют качество предсказания модели машинного обучения.
+
+\end{frame}
+
+\begin{frame}{Настройка правил проведения дуэлей и турниров}
+
+\begin{center}
+\includegraphics[width=4cm]{images/duel_configuration.png}
+\includegraphics[width=8cm]{images/tournament.png}
+\end{center}
+
+\end{frame}
+
+\begin{frame}
+\frametitle{Результаты работы}
+
+\begin{enumerate}
+\item Разработан комплекс информационных систем для проведения соревнований и тренировок по спортивному программированию в формате дуэли.
+\item Реализована распределённая тестирующая система с графом команд, планированием ресурсов и поддержкой масштабирования исполнителей и кластеров.
+\item Обучена модель машинного обучения для анализа подозрительности поведения пользователя.
+\end{enumerate}
+
+\end{frame}
+
+\end{document}

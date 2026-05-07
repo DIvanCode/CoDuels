@@ -2,7 +2,7 @@
 
 ## Архитектура
 
-<img src="architecture.png" width="800px" alt="https://unidraw.io/app/board/a23e3010995136d9ae5f?xyz=109%2C275%2C0.68">
+<img src="architecture.png" width="800px" alt="https://unidraw.io/app/board/a23e3010995136d9ae5f?xyz=282%2C274%2C0.65">
 
 ## Компоненты
 
