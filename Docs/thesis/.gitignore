@@ -1,0 +1,12 @@
+*
+!.gitignore
+!Makefile
+!thesis-main.tex
+!spbudiploma.sty
+!titlepage.tex
+!thesis-main.pdf
+!items/
+!items/**
+items/*.aux
+!images/
+!images/**

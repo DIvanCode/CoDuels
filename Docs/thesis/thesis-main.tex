@@ -1,0 +1,52 @@
+\documentclass[a4paper,article,14pt]{extarticle}
+
+% Подключаем главный пакет со всем необходимым
+\usepackage{spbudiploma}
+
+% Пакеты по желанию (самые распространенные)
+% Хитрые мат. символы
+\usepackage{euscript}
+% Таблицы
+\usepackage{longtable}
+\usepackage{makecell}
+% Картинки (можно вставлять даже pdf)
+\usepackage[pdftex]{graphicx}
+
+\usepackage{amsthm,amssymb, amsmath}
+\usepackage{textcomp}
+
+\usepackage{minted} % для примеров кода (требует параметра -shell-escape)
+\usemintedstyle{bw}
+
+
+\begin{document}
+
+% Титульник в файле titlepage.tex
+\input{titlepage.tex}
+
+% Содержание
+\tableofcontents
+\pagebreak
+
+\include{items/intro}
+
+\include{items/problem}
+
+\include{items/01-overview}
+
+\include{items/02-requirements}
+
+\include{items/03-architecture}
+
+\include{items/04-execution}
+
+\include{items/05-analyzer}
+
+\include{items/concl}
+
+
+
+% Аргумент {1} ниже включает переопределенный стиль с выравниванием слева
+\begin{thebibliography}{1}
+\end{thebibliography}
+\end{document}
