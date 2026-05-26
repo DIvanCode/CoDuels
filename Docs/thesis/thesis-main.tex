@@ -1,0 +1,64 @@
+\documentclass[a4paper,article,14pt]{extarticle}
+
+% Подключаем главный пакет со всем необходимым
+\usepackage{spbudiploma}
+
+% Пакеты по желанию (самые распространенные)
+% Хитрые мат. символы
+\usepackage{euscript}
+% Таблицы
+\usepackage{longtable}
+\usepackage{makecell}
+% Картинки (можно вставлять даже pdf)
+\usepackage[pdftex]{graphicx}
+
+\usepackage{amsthm,amssymb, amsmath}
+\usepackage{textcomp}
+
+\usepackage{minted} % для примеров кода (требует параметра -shell-escape)
+\usemintedstyle{bw}
+
+
+\begin{document}
+
+% Титульник в файле titlepage.tex
+\input{titlepage.tex}
+
+% Содержание
+\tableofcontents
+\pagebreak
+
+\include{items/intro}
+
+\include{items/problem}
+
+\include{items/01-overview}
+
+\include{items/02-requirements}
+
+\include{items/03-architecture}
+
+\include{items/04-execution}
+
+\include{items/05-analyzer}
+
+\include{items/concl}
+
+
+
+% Аргумент {1} ниже включает переопределенный стиль с выравниванием слева
+\begin{thebibliography}{1}
+    \bibitem{pinedo} Scheduling Theory, Algorithms and Systems (Pinedo, 2008).
+    \bibitem{queueing} Performance Modeling and Design of Computer Systems. Queueing Theory in Action.
+    \bibitem{srpt} On the SRPT Scheduling Discipline in Many-Server Queues with Impatient Customers \url{https://arxiv.org/abs/2102.05789}.
+    \bibitem{wfq} Алгоритмы Weighted fair queueing \url{https://en.wikipedia.org/wiki/Weighted_fair_queueing}.
+    \bibitem{doc-isolate} Документация утилиты isolate \url{https://www.ucw.cz/isolate/isolate.1.html}.
+    \bibitem{git-isolate} Репозиторий утилиты isolate \url{https://github.com/ioi/isolate}.
+    \bibitem{distbuild} Сборка и тестирование в монорепозитории: кластер распределённой сборки DistBuild \url{https://habr.com/ru/companies/yandex/articles/565568/}.
+    \bibitem{react} React документация \url{https://react.dev/}.
+    \bibitem{logreg-scikit} Документация по Логистической регрессии от scikit-learn \url{https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html}.
+    \bibitem{random-forest} Random Forest: прогулки по зимнему лесу \url{https://habr.com/ru/articles/320726/}.
+    \bibitem{random-scikit} Документация по Random Forest от scikit-learn \url{https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html}.
+    \bibitem{sklearn} Scikit-learn: Machine Learning in Python (Fabian Pedregosa, 2011) \url{https://jmlr.org/papers/volume12/pedregosa11a/pedregosa11a.pdf}.
+\end{thebibliography}
+\end{document}
