@@ -92,6 +92,39 @@ sequenceDiagram
     end
 ```
 
+#### Краткая схема
+
+```mermaid
+sequenceDiagram
+    participant Frontend
+    participant Duely
+    participant kafka [testing]
+    participant Taski
+    participant kafka [execution]
+    participant Exesh
+
+    Frontend->>Duely: Отправить решение на проверку
+    Duely-->>Frontend: Решение отправлено на проверку
+
+    Duely->>Taski: Протестировать решение задачи
+    Taski-->>Duely: Решение начало тестироваться
+
+    Taski->>Exesh: Запустить команды тестирования
+    Exesh-->>Taski: Запуск тестирования запланирован
+
+    loop Выполнение команд тестирования
+        Exesh->>Exesh: Выполнение одной команды
+
+        Exesh->>kafka [execution]: Статус выполнения команды
+        kafka [execution]-->>Taski: Статус выполнения команды
+
+        Taski->>kafka [testing]: Изменение статуса или вердикта тестирования
+        kafka [testing]-->>Duely: Изменение статуса или вердикта тестирования
+
+        Duely-->>Frontend: Текущий статус проверки решения
+    end
+```
+
 ### Выполнить код на входных данных
 
 - `Frontend` имеет web-socket соединение с `Duely` через nginx и отправляет сообщение с запросом на тестирование решения задачи (1), а далее ожидает сообщения с изменением статуса тестирования в web-socket соединение
