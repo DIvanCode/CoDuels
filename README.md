@@ -6,7 +6,7 @@ This repository is the release superproject for the CoDuels platform.
 - `Backend/` is the `CoDuels-Backend` submodule.
 - `Frontend/` is the `CoDuels-Frontend` submodule.
 
-Develop application code through pull requests in the component repositories. To release a component, update its submodule revision in a pull request to this repository. Merging that root pull request is the only production-release trigger.
+Develop application code through pull requests in the component repositories. To release a component, update its submodule revision in a pull request to this repository. After that root pull request is merged, its release job waits for a `production` environment approval; start deployment with **Review deployments → Approve and deploy**.
 
 Clone with submodules:
 

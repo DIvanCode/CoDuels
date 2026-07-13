@@ -22,7 +22,7 @@ Read [references/pipeline-map.md](references/pipeline-map.md) before changing an
 3. Keep the immutable image tag based on `github.sha` unless the release strategy is explicitly changed.
 4. Update workflow secret/variable references and playbook variables together. Never place secret values in YAML.
 5. Preserve vault encryption for backend service credentials and `no_log` on rendered secret-bearing templates.
-6. Keep build and deploy dependencies explicit. A deploy must not run when the image build failed, and must be initiated only by a merged root `CoDuels` pull request that advances a submodule revision.
+6. Keep build and deploy dependencies explicit. A deploy must not run when the image build failed, and must wait for a manual `production` environment approval after a root `CoDuels` pull request is merged.
 7. Add least-privilege `permissions`, environments, concurrency, or approvals deliberately; explain rollout effects.
 
 ## Verify safely

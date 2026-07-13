@@ -31,7 +31,7 @@
 
 ## Root production release
 
-`release-production.yml` reacts only to a closed pull request whose target is `master` and whose `merged` flag is true. It checks out the merge commit rather than the moving branch tip.
+`release-production.yml` starts after a pull request into `master` is merged and checks out that exact merge commit rather than the moving branch tip. Its deployment job targets the `production` GitHub Environment: with a required reviewer configured, the job waits for **Review deployments → Approve and deploy** and does not contact production before that approval.
 
 It compares the root Backend and Frontend gitlinks between the pull request base and merge revisions. If Backend changed, it fetches the two Backend commits and examines their paths. The dynamic release matrix deploys only these affected components:
 
@@ -43,7 +43,7 @@ It compares the root Backend and Frontend gitlinks between the pull request base
 - `alloy` -> render vault-protected configuration and recreate Grafana Alloy.
 - Frontend submodule change -> build/push and deploy Frontend.
 
-The workflow uses the immutable root merge SHA as the image tag, serializes releases with the `production` concurrency group, and targets the `production` GitHub Environment. It does not run for an unmerged or closed-without-merge pull request.
+The workflow uses the immutable root merge SHA as the image tag, serializes releases with the `production` concurrency group, and targets the `production` GitHub Environment. It runs only for an actually merged PR whose target is `master`.
 
 ## Ansible components
 
@@ -60,8 +60,8 @@ After the GitHub repository rename, configure these values on root `CoDuels`; re
 
 - Secrets: `DOCKER_PASSWORD`, `SSH_PASSWORD`, `VAULT_PASSWORD`, and `SSH_PRIVATE_KEY`.
 - Variable: `VITE_BASE_URL`.
-- Environment: create `production`; configure required reviewers there if an approval gate is wanted.
-- Root branch protection: require pull requests before merging into `master` and block direct pushes. The workflow itself only reacts to merged PR events, but branch protection prevents bypassing review.
+- Environment: create `production` and configure yourself as a required reviewer. This is required: it turns the release job into a manual approval step rather than an automatic deployment.
+- Root branch protection: require pull requests before merging into `master` and block direct pushes. Deployment remains paused for manual environment approval, so temporary production outages do not block merges.
 - Component branch protection: require Backend's applicable PR workflow and Frontend's `Frontend` workflow before merging their `master` branches. This makes the submodule revision promoted through root CoDuels a previously validated revision.
 
 Do not place credentials in workflow YAML, decrypt vault files in CI logs, or manually invoke a production playbook outside an approved release.

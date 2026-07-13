@@ -10,7 +10,7 @@
 ## Release ownership
 
 - Production delivery belongs only to this repository's `.github/workflows/release-production.yml`.
-- The release workflow runs only after a pull request to this repository's `master` branch is merged. It compares submodule revisions and deploys only affected Frontend or Backend service components.
+- A merge into `master` creates the release workflow but never starts deployment by itself. Configure the `production` GitHub Environment with yourself as a required reviewer; the release job will wait until you click **Review deployments → Approve and deploy**. It compares the merged PR's submodule revisions and deploys only affected Frontend or Backend service components.
 - Do not add push-to-production workflows to `CoDuels-Backend`, `CoDuels-Frontend`, or project-owned nested submodules. Their workflows perform pull-request validation only.
 - The `production` GitHub Environment and the release secrets/variable must be configured in this repository after the GitHub rename. Direct pushes to `master` should be blocked by branch protection in root and component repositories, with their respective PR checks required before merge.
 
