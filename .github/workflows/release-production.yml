@@ -55,7 +55,7 @@ jobs:
             if grep -q '^Exesh/' <<< "$changed_backend"; then
               add_component '{"name":"exesh","build":"true","vault":"true","auth":"password","build_dir":"Backend/Exesh/ansible/build","deploy_dir":"Backend/Exesh/ansible/deploy"}'
             fi
-            if grep -q '^Taski/' <<< "$changed_backend" && grep -Eqv '^Taski/tasks($|/)' <<< "$changed_backend"; then
+            if grep -E '^Taski/' <<< "$changed_backend" | grep -Eqv '^Taski/tasks($|/)'; then
               add_component '{"name":"taski","build":"true","vault":"true","auth":"password","build_dir":"Backend/Taski/ansible/build","deploy_dir":"Backend/Taski/ansible/deploy"}'
             fi
             if grep -q '^Taski/tasks$' <<< "$changed_backend"; then
@@ -135,17 +135,21 @@ jobs:
       - name: Deploy password-authenticated component with Vault
         if: matrix.auth == 'password' && matrix.vault == 'true'
         working-directory: ${{ matrix.deploy_dir }}
+        env:
+          SSH_PASSWORD: ${{ secrets.SSH_PASSWORD }}
         run: |
           ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory playbook.yml \
-            --extra-vars="version=${{ github.event.pull_request.merge_commit_sha }} ansible_user=root ansible_password=${{ secrets.SSH_PASSWORD }}" \
+            --extra-vars="version=${{ github.event.pull_request.merge_commit_sha }} ansible_user=root ansible_password=$SSH_PASSWORD" \
             --vault-password-file ~/vault_pass.txt
 
       - name: Deploy password-authenticated component
         if: matrix.auth == 'password' && matrix.vault == 'false'
         working-directory: ${{ matrix.deploy_dir }}
+        env:
+          SSH_PASSWORD: ${{ secrets.SSH_PASSWORD }}
         run: |
           ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory playbook.yml \
-            --extra-vars="version=${{ github.event.pull_request.merge_commit_sha }} ansible_user=root ansible_password=${{ secrets.SSH_PASSWORD }}"
+            --extra-vars="version=${{ github.event.pull_request.merge_commit_sha }} ansible_user=root ansible_password=$SSH_PASSWORD"
 
       - name: Create Frontend SSH key file
         if: matrix.auth == 'ssh'
