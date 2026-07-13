@@ -1,0 +1,167 @@
+name: Release production
+
+on:
+  pull_request:
+    branches: [master]
+    types: [closed]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: production
+  cancel-in-progress: false
+
+jobs:
+  detect-components:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    outputs:
+      has_changes: ${{ steps.components.outputs.has_changes }}
+      matrix: ${{ steps.components.outputs.matrix }}
+    steps:
+      - name: Check out merged release revision
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.merge_commit_sha }}
+          fetch-depth: 0
+          submodules: recursive
+
+      - name: Detect released components
+        id: components
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          RELEASE_SHA: ${{ github.event.pull_request.merge_commit_sha }}
+        run: |
+          set -euo pipefail
+
+          components=()
+
+          add_component() {
+            components+=("$1")
+          }
+
+          base_backend=$(git ls-tree "$BASE_SHA" Backend | awk '{print $3}')
+          release_backend=$(git ls-tree "$RELEASE_SHA" Backend | awk '{print $3}')
+
+          if [ -n "$base_backend" ] && [ -n "$release_backend" ] && [ "$base_backend" != "$release_backend" ]; then
+            git -C Backend fetch --no-tags --depth=1 origin "$base_backend" "$release_backend"
+            changed_backend=$(git -C Backend diff --name-only "$base_backend" "$release_backend")
+
+            if grep -q '^Duely/' <<< "$changed_backend"; then
+              add_component '{"name":"duely","build":"true","vault":"true","auth":"password","build_dir":"Backend/Duely/ansible/build","deploy_dir":"Backend/Duely/ansible/deploy"}'
+            fi
+            if grep -q '^Exesh/' <<< "$changed_backend"; then
+              add_component '{"name":"exesh","build":"true","vault":"true","auth":"password","build_dir":"Backend/Exesh/ansible/build","deploy_dir":"Backend/Exesh/ansible/deploy"}'
+            fi
+            if grep -q '^Taski/' <<< "$changed_backend" && grep -Eqv '^Taski/tasks($|/)' <<< "$changed_backend"; then
+              add_component '{"name":"taski","build":"true","vault":"true","auth":"password","build_dir":"Backend/Taski/ansible/build","deploy_dir":"Backend/Taski/ansible/deploy"}'
+            fi
+            if grep -q '^Taski/tasks$' <<< "$changed_backend"; then
+              add_component '{"name":"tasks","build":"false","vault":"false","auth":"password","build_dir":"","deploy_dir":"Backend/Taski/tasks/ansible/deploy"}'
+            fi
+            if grep -q '^Analyzer/' <<< "$changed_backend"; then
+              add_component '{"name":"analyzer","build":"true","vault":"false","auth":"password","build_dir":"Backend/Analyzer/ansible/build","deploy_dir":"Backend/Analyzer/ansible/deploy"}'
+            fi
+            if grep -q '^nginx/' <<< "$changed_backend"; then
+              add_component '{"name":"nginx","build":"false","vault":"false","auth":"password","build_dir":"","deploy_dir":"Backend/nginx/ansible/deploy"}'
+            fi
+            if grep -q '^alloy/' <<< "$changed_backend"; then
+              add_component '{"name":"alloy","build":"false","vault":"true","auth":"password","build_dir":"","deploy_dir":"Backend/alloy/ansible/deploy"}'
+            fi
+          fi
+
+          base_frontend=$(git ls-tree "$BASE_SHA" Frontend | awk '{print $3}')
+          release_frontend=$(git ls-tree "$RELEASE_SHA" Frontend | awk '{print $3}')
+          if [ -n "$base_frontend" ] && [ -n "$release_frontend" ] && [ "$base_frontend" != "$release_frontend" ]; then
+            add_component '{"name":"frontend","build":"true","vault":"false","auth":"ssh","build_dir":"Frontend/ansible/build","deploy_dir":"Frontend/ansible/deploy"}'
+          fi
+
+          if [ "${#components[@]}" -eq 0 ]; then
+            echo 'has_changes=false' >> "$GITHUB_OUTPUT"
+            echo 'matrix={"include":[]}' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          matrix=$(printf '%s\n' "${components[@]}" | jq -sc '{include: .}')
+          echo 'has_changes=true' >> "$GITHUB_OUTPUT"
+          echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
+
+  release:
+    needs: detect-components
+    if: needs.detect-components.outputs.has_changes == 'true'
+    runs-on: ubuntu-latest
+    environment: production
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.detect-components.outputs.matrix) }}
+    steps:
+      - name: Check out merged release revision
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.merge_commit_sha }}
+          submodules: recursive
+
+      - name: Set up Ansible
+        run: |
+          python3 -m pip install ansible docker
+
+      - name: Train Analyzer models
+        if: matrix.name == 'analyzer'
+        working-directory: Backend/Analyzer
+        run: |
+          python3 -m pip install -r requirements.txt
+          python3 train.py --data-dir data/train
+
+      - name: Log in to Docker Hub
+        if: matrix.build == 'true'
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u divancode74 --password-stdin
+
+      - name: Build backend image
+        if: matrix.build == 'true' && matrix.name != 'frontend'
+        working-directory: ${{ matrix.build_dir }}
+        run: ansible-playbook -i inventory playbook.yml --extra-vars="version=${{ github.event.pull_request.merge_commit_sha }}"
+
+      - name: Build Frontend image
+        if: matrix.name == 'frontend'
+        working-directory: ${{ matrix.build_dir }}
+        run: ansible-playbook -i inventory playbook.yml --extra-vars="version=${{ github.event.pull_request.merge_commit_sha }} vite_base_url=${{ vars.VITE_BASE_URL }}"
+
+      - name: Create Ansible Vault password file
+        if: matrix.vault == 'true'
+        run: echo "${{ secrets.VAULT_PASSWORD }}" > ~/vault_pass.txt
+
+      - name: Deploy password-authenticated component with Vault
+        if: matrix.auth == 'password' && matrix.vault == 'true'
+        working-directory: ${{ matrix.deploy_dir }}
+        run: |
+          ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory playbook.yml \
+            --extra-vars="version=${{ github.event.pull_request.merge_commit_sha }} ansible_user=root ansible_password=${{ secrets.SSH_PASSWORD }}" \
+            --vault-password-file ~/vault_pass.txt
+
+      - name: Deploy password-authenticated component
+        if: matrix.auth == 'password' && matrix.vault == 'false'
+        working-directory: ${{ matrix.deploy_dir }}
+        run: |
+          ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory playbook.yml \
+            --extra-vars="version=${{ github.event.pull_request.merge_commit_sha }} ansible_user=root ansible_password=${{ secrets.SSH_PASSWORD }}"
+
+      - name: Create Frontend SSH key file
+        if: matrix.auth == 'ssh'
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key.pem
+          chmod 600 ~/.ssh/deploy_key.pem
+
+      - name: Deploy Frontend
+        if: matrix.auth == 'ssh'
+        working-directory: ${{ matrix.deploy_dir }}
+        run: |
+          ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory playbook.yml \
+            --private-key ~/.ssh/deploy_key.pem \
+            --extra-vars="version=${{ github.event.pull_request.merge_commit_sha }} ansible_user=ubuntu"
+
+      - name: Clean up credentials
+        if: always()
+        run: rm -f ~/vault_pass.txt ~/.ssh/deploy_key.pem

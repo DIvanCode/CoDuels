@@ -1,0 +1,38 @@
+---
+name: coduels-delivery
+description: Review or change CoDuels GitHub Actions, Docker image builds, Ansible build/deploy playbooks, inventories, vault usage, Nginx/Alloy delivery, task storage deployment, and CI verification. Use for .github workflows, CI failures, deployment configuration, image tagging, GitHub secrets/variables, production rollout design, or documenting the current Ansible pipelines.
+---
+
+# Maintain CoDuels delivery
+
+## Read the delivery map
+
+Read [references/pipeline-map.md](references/pipeline-map.md) before changing any workflow, playbook, inventory, Docker image, or deployment variable.
+
+## Separate review from mutation
+
+- Inspect workflows, Dockerfiles, playbooks, and encrypted-variable headers freely.
+- Do not decrypt vault files, expose secrets, log credentials, push images, connect to inventory hosts, or run deploy playbooks unless the user explicitly authorizes that external action.
+- Treat a request to review or explain CI as read-only. Do not fix or rerun CI unless requested.
+
+## Change a pipeline coherently
+
+1. Identify the workflow owner. Root `CoDuels` owns all production release workflows. `Backend`, `Frontend`, `Backend/Taski/tasks`, and `Backend/filestorage` keep only component pull-request validation.
+2. Trace trigger/path filters -> test/build job -> Docker tag -> Ansible variables -> container environment and ports.
+3. Keep the immutable image tag based on `github.sha` unless the release strategy is explicitly changed.
+4. Update workflow secret/variable references and playbook variables together. Never place secret values in YAML.
+5. Preserve vault encryption for backend service credentials and `no_log` on rendered secret-bearing templates.
+6. Keep build and deploy dependencies explicit. A deploy must not run when the image build failed, and must be initiated only by a merged root `CoDuels` pull request that advances a submodule revision.
+7. Add least-privilege `permissions`, environments, concurrency, or approvals deliberately; explain rollout effects.
+
+## Verify safely
+
+- Parse changed YAML and run `ansible-playbook --syntax-check` where it does not require unavailable vault material.
+- Use `--check` only for playbooks/modules that support it and only against a non-production or explicitly approved inventory.
+- Validate Docker builds only when dependencies/network and time budget allow; do not push.
+- Match CI commands locally: .NET tests, Go tests, Frontend build/lint, Analyzer training/checks.
+- Review logs for accidental secret expansion and ensure temporary key/password files are removed under `if: always()`.
+
+## Report
+
+Summarize triggers, jobs, images, target component, required secrets/variables, and validation gaps. Call out operational risks as findings, but do not silently redesign delivery during an unrelated feature task.

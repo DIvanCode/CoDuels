@@ -1,15 +1,21 @@
-# Coduels
+# CoDuels
 
-Платформа с соревнованиями по спортивному программированию.
+This repository is the release superproject for the CoDuels platform.
 
-Соревнование - "дуэль" между двумя пользователями.
+- `Docs/` contains architecture documentation, slides, and the thesis.
+- `Backend/` is the `CoDuels-Backend` submodule.
+- `Frontend/` is the `CoDuels-Frontend` submodule.
 
-Участникам даётся одна задача.
+Develop application code through pull requests in the component repositories. To release a component, update its submodule revision in a pull request to this repository. Merging that root pull request is the only production-release trigger.
 
-Побеждает тот, кто первый отправил правильное решение.
+Clone with submodules:
 
-[Функциональные требования](func.md)
+```bash
+git clone --recurse-submodules https://github.com/DIvanCode/CoDuels.git
+```
 
-[Техническая реализация](tech.md)
+For an existing clone:
 
-[Дизайн](https://www.figma.com/design/YJ4S0iifPlgBkFYNWzMaRA/CoDuels?node-id=0-1&p=f&t=7lvbGvRjVDDREqHg-0)
+```bash
+git submodule update --init --recursive
+```
