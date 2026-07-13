@@ -1,0 +1,4 @@
+interface:
+  display_name: "CoDuels Execution"
+  short_description: "Work on CoDuels Taski and Exesh execution"
+  default_prompt: "Use $coduels-execution to change the distributed solution-testing pipeline safely."

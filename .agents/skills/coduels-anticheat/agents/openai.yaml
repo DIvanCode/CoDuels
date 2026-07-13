@@ -1,0 +1,4 @@
+interface:
+  display_name: "CoDuels Anti-Cheat"
+  short_description: "Maintain CoDuels anti-cheat event and ML flow"
+  default_prompt: "Use $coduels-anticheat to change anti-cheat tracking, persistence, features, or models end to end."

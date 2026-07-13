@@ -1,0 +1,4 @@
+interface:
+  display_name: "CoDuels Delivery"
+  short_description: "Maintain CoDuels GitHub Actions and Ansible"
+  default_prompt: "Use $coduels-delivery to update a CoDuels CI, Docker build, or Ansible deployment workflow safely."

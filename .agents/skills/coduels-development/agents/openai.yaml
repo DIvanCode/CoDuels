@@ -1,0 +1,4 @@
+interface:
+  display_name: "CoDuels Development"
+  short_description: "Develop cross-service CoDuels features safely"
+  default_prompt: "Use $coduels-development to implement a CoDuels change across the correct components."
