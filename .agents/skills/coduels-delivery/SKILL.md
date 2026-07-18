@@ -25,6 +25,13 @@ Read [references/pipeline-map.md](references/pipeline-map.md) before changing an
 6. Keep build and deploy dependencies explicit. A deploy must not run when the image build failed, and must wait for a manual `production` environment approval after a root `CoDuels` pull request is merged.
 7. Add least-privilege `permissions`, environments, concurrency, or approvals deliberately; explain rollout effects.
 
+## Keep cross-service e2e gates coherent
+
+- Give each e2e scenario one local entry point and one owning pull-request workflow so a multi-service change does not start duplicate copies.
+- Include every participating service, the scenario directory, the workflow itself, and related config/infrastructure paths in the workflow filters.
+- Initialize required submodules recursively, use least-privilege permissions and a bounded timeout, and invoke the same command developers run locally.
+- When adding a scenario, update `Backend/e2e/README.md`, the scenario README, agent verification guidance, and the delivery map together.
+
 ## Verify safely
 
 - Parse changed YAML and run `ansible-playbook --syntax-check` where it does not require unavailable vault material.
