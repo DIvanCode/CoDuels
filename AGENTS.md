@@ -36,8 +36,11 @@
 
 - Use the project skills when relevant: `$coduels-development`, `$coduels-execution`, `$coduels-anticheat`, and `$coduels-delivery`.
 - Start cross-service changes at the owning domain, then update transport contracts and consumers. Do not put business rules in Frontend components or HTTP handlers.
+- Use Conventional Commits (`type(scope): description`) for every commit and use the same concise, imperative convention for pull-request titles.
 - Preserve the existing architecture: FSD boundaries in Frontend; application/domain/infrastructure direction in Duely; domain/usecase/adapter separation in Go services.
 - Never run user-supplied code directly on the host. Keep execution through Exesh workers and `isolate`.
+- For every Taski or Exesh change, run `Backend/e2e/taski-exesh/run.sh` after focused tests. Review and update that scenario when related service contracts, Docker/Compose/Ansible configuration, task fixtures, submodules, infrastructure, or configs change.
+- When adding a cross-service Backend e2e scenario, follow `Backend/e2e/README.md` and add a pull-request workflow whose paths cover all participating services, the scenario, and related configuration/infrastructure without duplicate runs.
 - Never decrypt, print, or replace `ansible/deploy/credentials.yml` unless the user explicitly requests credential maintenance. Never deploy, push images, or run production playbooks without explicit authorization.
 - Prefer focused verification. If dependencies or infrastructure are unavailable, report exactly which checks were not run.
 
@@ -47,6 +50,7 @@
 - Duely: from `Backend/Duely/`, run `dotnet test --configuration Release`.
 - Exesh: from `Backend/Exesh/`, run `go test ./...`.
 - Taski: from `Backend/Taski/`, run `go test ./...`.
+- Taski-Exesh e2e: after any Taski or Exesh change, run `Backend/e2e/taski-exesh/run.sh` from the root repository.
 - filestorage: from `Backend/filestorage/`, run `go test ./...`.
 - Analyzer: use a Python 3.10 virtual environment, install `requirements.txt`, and run `python train.py --data-dir data/train` only when training/features change. Model artifacts are required before starting the API.
 - Docs: from `Docs/thesis/` or `Docs/slides/`, run `make` when LaTeX output is affected; this needs `latexmk`, a suitable TeX installation, Pygments, and shell escape.

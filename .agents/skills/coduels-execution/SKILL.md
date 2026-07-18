@@ -34,6 +34,13 @@ Read [references/execution-map.md](references/execution-map.md) before changing 
 - Do not run arbitrary or user-provided solutions outside the existing worker sandbox.
 - Avoid load tests by default; they consume substantial local resources. Use deterministic unit tests first.
 
+## Maintain end-to-end coverage
+
+- Treat `Backend/e2e/taski-exesh` as a consumer of Taski/Exesh HTTP, message, job, artifact, configuration, task-package, Docker, and isolation contracts.
+- After every Taski or Exesh change, run `Backend/e2e/taski-exesh/run.sh` after focused tests. If Docker or isolation is unavailable, report the exact verification gap.
+- When Taski, Exesh, their configs, Docker/Compose/Ansible wiring, submodules, fixtures, or related infrastructure changes, review the scenario and update it in the same change if its services, configs, seeded data, requests, or assertions are stale.
+- For a new cross-service scenario, follow `Backend/e2e/README.md` and add one pull-request workflow whose path filters include all participating services, the scenario, the workflow, and related config/infrastructure paths without duplicating the run for multi-service changes.
+
 ## Verify
 
 1. Run `go test ./...` in each changed Go module: Exesh, Taski, and/or filestorage.
@@ -41,3 +48,4 @@ Read [references/execution-map.md](references/execution-map.md) before changing 
 3. If a contract changed, run tests in both producer and consumer and verify Duely gateways/pollers.
 4. Use compose only when an integration result is necessary. Start the root Backend compose first so the external `coduels` network exists.
 5. Report whether isolation was exercised; unit tests alone do not prove the host kernel/cgroup setup.
+6. For Taski or Exesh changes, run the isolated Taski-Exesh e2e entry point; it owns its Compose project and does not require the regular Backend stack.
