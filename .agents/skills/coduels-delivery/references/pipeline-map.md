@@ -32,9 +32,11 @@
 
 ## Root production release
 
-Each component has a separate `release-<component>.yml` workflow. The workflows start only after a pull request into `master` that changes their root submodule is closed, and they continue only when the pull request was merged. Every deployment checks out the exact merge commit rather than the moving branch tip and targets the `production` GitHub Environment. With a required reviewer configured, every affected component waits for **Review deployments → Approve and deploy** and does not contact production before that approval.
+Each component has a separate `release-<component>.yml` workflow. All component workflows start after any pull request into `master` is closed and continue only when the pull request was merged. Every deployment checks out the exact merge commit rather than the moving branch tip and targets the `production` GitHub Environment.
 
-Frontend releases are selected directly by the root `Frontend` gitlink change. Backend workflows share `check-backend-component.yml`, which compares the Backend gitlinks from the pull request base and merge revisions and reports whether that workflow's explicit component path changed. The reusable `release-component.yml` contains the common checkout, Ansible setup, image build, authentication, deployment, and credential-cleanup steps. There is no dynamic matrix or generated component list.
+There is no component change detection, path filter, dynamic matrix, or generated component list. With a required reviewer configured, all component jobs wait at **Review deployments → Approve and deploy** without starting a runner. The reviewer approves only the components that should be released and leaves or rejects the others.
+
+The reusable `release-component.yml` contains the common backend checkout, Ansible setup, optional image build, password/Vault deployment, and credential-cleanup steps. Analyzer keeps model installation and training in `release-analyzer.yml`; Frontend keeps its Vite build variable and SSH-key deployment in `release-frontend.yml`.
 
 The component workflows are:
 

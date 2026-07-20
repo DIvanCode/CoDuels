@@ -4,26 +4,17 @@ on:
   pull_request:
     branches: [master]
     types: [closed]
-    paths: [Backend]
 
 permissions:
   contents: read
 
 jobs:
-  changes:
-    if: github.event.pull_request.merged == true
-    uses: ./.github/workflows/check-backend-component.yml
-    with:
-      component_path: alloy
-
   release:
-    needs: changes
-    if: needs.changes.outputs.changed == 'true'
+    if: github.event.pull_request.merged == true
     uses: ./.github/workflows/release-component.yml
     with:
       component: alloy
       build: false
       deploy_dir: Backend/alloy/ansible/deploy
       vault: true
-      auth: password
     secrets: inherit

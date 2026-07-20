@@ -4,21 +4,13 @@ on:
   pull_request:
     branches: [master]
     types: [closed]
-    paths: [Backend]
 
 permissions:
   contents: read
 
 jobs:
-  changes:
-    if: github.event.pull_request.merged == true
-    uses: ./.github/workflows/check-backend-component.yml
-    with:
-      component_path: Exesh
-
   release:
-    needs: changes
-    if: needs.changes.outputs.changed == 'true'
+    if: github.event.pull_request.merged == true
     uses: ./.github/workflows/release-component.yml
     with:
       component: exesh
@@ -26,5 +18,4 @@ jobs:
       build_dir: Backend/Exesh/ansible/build
       deploy_dir: Backend/Exesh/ansible/deploy
       vault: true
-      auth: password
     secrets: inherit
