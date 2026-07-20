@@ -1,0 +1,21 @@
+name: Release Taski
+
+on:
+  pull_request:
+    branches: [master]
+    types: [closed]
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    if: github.event.pull_request.merged == true
+    uses: ./.github/workflows/release-component.yml
+    with:
+      component: taski
+      build: true
+      build_dir: Backend/Taski/ansible/build
+      deploy_dir: Backend/Taski/ansible/deploy
+      vault: true
+    secrets: inherit

@@ -1,0 +1,20 @@
+name: Release Alloy
+
+on:
+  pull_request:
+    branches: [master]
+    types: [closed]
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    if: github.event.pull_request.merged == true
+    uses: ./.github/workflows/release-component.yml
+    with:
+      component: alloy
+      build: false
+      deploy_dir: Backend/alloy/ansible/deploy
+      vault: true
+    secrets: inherit

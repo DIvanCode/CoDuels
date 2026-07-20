@@ -12,7 +12,7 @@
 
 `/mnt/d/CoDuels` is the primary `CoDuels` Git repository and release superproject.
 
-- `Docs/` is tracked directly by `CoDuels`.
+- `Docs/` and the component-specific production release workflows are tracked directly by `CoDuels`.
 - `Backend/` -> `DIvanCode/CoDuels-Backend` submodule.
 - `Frontend/` -> `DIvanCode/CoDuels-Frontend` submodule.
 
