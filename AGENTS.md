@@ -11,6 +11,7 @@
 
 - Production delivery belongs only to this repository's component-specific `.github/workflows/release-*.yml` workflows.
 - A merge into `master` creates a release job for every production component without detecting which submodules or services changed. Every job targets the `production` GitHub Environment and waits for **Review deployments → Approve and deploy**; approve only the components that should be released.
+- During deployment review, explicitly **Reject** or cancel every component that is not part of the release. Never leave an unselected component waiting: its `production-<component>` concurrency group can block or replace a later release of that component.
 - Do not add push-to-production workflows to `CoDuels-Backend`, `CoDuels-Frontend`, or project-owned nested submodules. Their workflows perform pull-request validation only.
 - The `production` GitHub Environment and the release secrets/variable must be configured in this repository after the GitHub rename. Direct pushes to `master` should be blocked by branch protection in root and component repositories, with their respective PR checks required before merge.
 
@@ -21,6 +22,7 @@
   2. Implement and verify the issue in a separate branch, push it, and open a Draft Pull Request.
   3. Link the issue to the Pull Request with a closing reference and move the project item to **Review** after the Draft Pull Request is created.
 - Preserve unrelated local work. If the current checkout is dirty or belongs to another task, use an isolated worktree for the issue branch.
+- When the user says they left Pull Request comments or asks to check them, immediately implement every unambiguous unresolved actionable thread. Ask for direction only when comments conflict, are ambiguous, or require a material product or architecture choice.
 
 ## Source of truth
 

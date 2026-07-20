@@ -34,7 +34,7 @@
 
 Each component has a separate `release-<component>.yml` workflow. All component workflows start after any pull request into `master` is closed and continue only when the pull request was merged. Every deployment checks out the exact merge commit rather than the moving branch tip and targets the `production` GitHub Environment.
 
-There is no component change detection, path filter, dynamic matrix, or generated component list. With a required reviewer configured, all component jobs wait at **Review deployments → Approve and deploy** without starting a runner. The reviewer approves only the components that should be released and leaves or rejects the others.
+There is no component change detection, path filter, dynamic matrix, or generated component list. With a required reviewer configured, all component jobs wait at **Review deployments → Approve and deploy** without starting a runner. The reviewer must approve only the components that should be released and explicitly **Reject** or cancel every other component in the same review session. Unselected jobs must not remain waiting because each one occupies its `production-<component>` concurrency group and can block or replace a later release.
 
 The reusable `release-component.yml` contains the common backend checkout, Ansible setup, optional image build, password/Vault deployment, and credential-cleanup steps. Analyzer keeps model installation and training in `release-analyzer.yml`; Frontend keeps its Vite build variable and SSH-key deployment in `release-frontend.yml`.
 
