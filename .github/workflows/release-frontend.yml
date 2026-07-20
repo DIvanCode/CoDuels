@@ -1,0 +1,24 @@
+name: Release Frontend
+
+on:
+  pull_request:
+    branches: [master]
+    types: [closed]
+    paths: [Frontend]
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    if: github.event.pull_request.merged == true
+    uses: ./.github/workflows/release-component.yml
+    with:
+      component: frontend
+      build: true
+      build_dir: Frontend/ansible/build
+      deploy_dir: Frontend/ansible/deploy
+      vault: false
+      auth: ssh
+      frontend: true
+    secrets: inherit

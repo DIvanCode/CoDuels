@@ -9,10 +9,18 @@
 
 ## Release ownership
 
-- Production delivery belongs only to this repository's `.github/workflows/release-production.yml`.
-- A merge into `master` creates the release workflow but never starts deployment by itself. Configure the `production` GitHub Environment with yourself as a required reviewer; the release job will wait until you click **Review deployments → Approve and deploy**. It compares the merged PR's submodule revisions and deploys only affected Frontend or Backend service components.
+- Production delivery belongs only to this repository's component-specific `.github/workflows/release-*.yml` workflows.
+- A merge into `master` creates release workflows only for changed root submodules. Backend workflows then compare the merged Backend revisions and continue only for their own component. Configure the `production` GitHub Environment with yourself as a required reviewer; every affected component will wait until you click **Review deployments → Approve and deploy**.
 - Do not add push-to-production workflows to `CoDuels-Backend`, `CoDuels-Frontend`, or project-owned nested submodules. Their workflows perform pull-request validation only.
 - The `production` GitHub Environment and the release secrets/variable must be configured in this repository after the GitHub rename. Direct pushes to `master` should be blocked by branch protection in root and component repositories, with their respective PR checks required before merge.
+
+## GitHub issue workflow
+
+- When the user sends only a GitHub issue link, treat it as a request to complete the following workflow unless they explicitly ask for analysis only:
+  1. Move the issue's project item to **In Progress** before starting implementation.
+  2. Implement and verify the issue in a separate branch, push it, and open a Draft Pull Request.
+  3. Link the issue to the Pull Request with a closing reference and move the project item to **Review** after the Draft Pull Request is created.
+- Preserve unrelated local work. If the current checkout is dirty or belongs to another task, use an isolated worktree for the issue branch.
 
 ## Source of truth
 

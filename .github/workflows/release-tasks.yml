@@ -1,0 +1,29 @@
+name: Release task storage
+
+on:
+  pull_request:
+    branches: [master]
+    types: [closed]
+    paths: [Backend]
+
+permissions:
+  contents: read
+
+jobs:
+  changes:
+    if: github.event.pull_request.merged == true
+    uses: ./.github/workflows/check-backend-component.yml
+    with:
+      component_path: Taski/tasks
+
+  release:
+    needs: changes
+    if: needs.changes.outputs.changed == 'true'
+    uses: ./.github/workflows/release-component.yml
+    with:
+      component: tasks
+      build: false
+      deploy_dir: Backend/Taski/tasks/ansible/deploy
+      vault: false
+      auth: password
+    secrets: inherit

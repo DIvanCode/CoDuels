@@ -1,0 +1,73 @@
+name: Check backend component
+
+on:
+  workflow_call:
+    inputs:
+      component_path:
+        description: Backend path whose changes should trigger a release
+        required: true
+        type: string
+      excluded_path:
+        description: Optional nested path to exclude from the component
+        required: false
+        type: string
+        default: ""
+    outputs:
+      changed:
+        description: Whether the component changed between the released Backend revisions
+        value: ${{ jobs.detect.outputs.changed }}
+
+permissions:
+  contents: read
+
+jobs:
+  detect:
+    runs-on: ubuntu-latest
+    outputs:
+      changed: ${{ steps.changes.outputs.changed }}
+    steps:
+      - name: Check out merged release revision
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.merge_commit_sha }}
+          fetch-depth: 0
+
+      - name: Initialize Backend
+        run: git submodule update --init Backend
+
+      - name: Check ${{ inputs.component_path }} changes
+        id: changes
+        shell: bash
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          RELEASE_SHA: ${{ github.event.pull_request.merge_commit_sha }}
+          COMPONENT_PATH: ${{ inputs.component_path }}
+          EXCLUDED_PATH: ${{ inputs.excluded_path }}
+        run: |
+          set -euo pipefail
+
+          base_backend=$(git ls-tree "$BASE_SHA" Backend | awk '{print $3}')
+          release_backend=$(git ls-tree "$RELEASE_SHA" Backend | awk '{print $3}')
+
+          if [ -z "$base_backend" ] || [ -z "$release_backend" ] || [ "$base_backend" = "$release_backend" ]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          git -C Backend fetch --no-tags --depth=1 origin "$base_backend" "$release_backend"
+
+          paths=("$COMPONENT_PATH")
+          if [ -n "$EXCLUDED_PATH" ]; then
+            paths+=(":(exclude)$EXCLUDED_PATH")
+          fi
+
+          set +e
+          git -C Backend diff --quiet "$base_backend" "$release_backend" -- "${paths[@]}"
+          diff_status=$?
+          set -e
+
+          case "$diff_status" in
+            0) echo "changed=false" >> "$GITHUB_OUTPUT" ;;
+            1) echo "changed=true" >> "$GITHUB_OUTPUT" ;;
+            *) exit "$diff_status" ;;
+          esac

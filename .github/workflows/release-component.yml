@@ -1,0 +1,125 @@
+name: Release component
+
+on:
+  workflow_call:
+    inputs:
+      component:
+        description: Component name used in the release job and concurrency group
+        required: true
+        type: string
+      build:
+        description: Whether to build and publish a Docker image
+        required: true
+        type: boolean
+      build_dir:
+        description: Ansible build directory
+        required: false
+        type: string
+        default: .
+      deploy_dir:
+        description: Ansible deploy directory
+        required: true
+        type: string
+      vault:
+        description: Whether deployment requires the Ansible Vault password
+        required: true
+        type: boolean
+      auth:
+        description: Deployment authentication method, password or ssh
+        required: true
+        type: string
+      frontend:
+        description: Whether to pass the Frontend build configuration
+        required: false
+        type: boolean
+        default: false
+      train_analyzer:
+        description: Whether to train Analyzer models before building
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-${{ inputs.component }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Release ${{ inputs.component }}
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Check out merged release revision
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.merge_commit_sha }}
+          submodules: recursive
+
+      - name: Set up Ansible
+        run: python3 -m pip install ansible docker
+
+      - name: Train Analyzer models
+        if: inputs.train_analyzer
+        working-directory: Backend/Analyzer
+        run: |
+          python3 -m pip install -r requirements.txt
+          python3 train.py --data-dir data/train
+
+      - name: Log in to Docker Hub
+        if: inputs.build
+        run: echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u divancode74 --password-stdin
+
+      - name: Build backend image
+        if: inputs.build && !inputs.frontend
+        working-directory: ${{ inputs.build_dir }}
+        run: ansible-playbook -i inventory playbook.yml --extra-vars="version=${{ github.event.pull_request.merge_commit_sha }}"
+
+      - name: Build Frontend image
+        if: inputs.frontend
+        working-directory: ${{ inputs.build_dir }}
+        run: ansible-playbook -i inventory playbook.yml --extra-vars="version=${{ github.event.pull_request.merge_commit_sha }} vite_base_url=${{ vars.VITE_BASE_URL }}"
+
+      - name: Create Ansible Vault password file
+        if: inputs.vault
+        run: echo "${{ secrets.VAULT_PASSWORD }}" > ~/vault_pass.txt
+
+      - name: Deploy password-authenticated component with Vault
+        if: inputs.auth == 'password' && inputs.vault
+        working-directory: ${{ inputs.deploy_dir }}
+        env:
+          SSH_PASSWORD: ${{ secrets.SSH_PASSWORD }}
+        run: |
+          ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory playbook.yml \
+            --extra-vars="version=${{ github.event.pull_request.merge_commit_sha }} ansible_user=root ansible_password=$SSH_PASSWORD" \
+            --vault-password-file ~/vault_pass.txt
+
+      - name: Deploy password-authenticated component
+        if: inputs.auth == 'password' && !inputs.vault
+        working-directory: ${{ inputs.deploy_dir }}
+        env:
+          SSH_PASSWORD: ${{ secrets.SSH_PASSWORD }}
+        run: |
+          ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory playbook.yml \
+            --extra-vars="version=${{ github.event.pull_request.merge_commit_sha }} ansible_user=root ansible_password=$SSH_PASSWORD"
+
+      - name: Create Frontend SSH key file
+        if: inputs.auth == 'ssh'
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key.pem
+          chmod 600 ~/.ssh/deploy_key.pem
+
+      - name: Deploy Frontend
+        if: inputs.auth == 'ssh'
+        working-directory: ${{ inputs.deploy_dir }}
+        run: |
+          ANSIBLE_HOST_KEY_CHECKING=False ansible-playbook -i inventory playbook.yml \
+            --private-key ~/.ssh/deploy_key.pem \
+            --extra-vars="version=${{ github.event.pull_request.merge_commit_sha }} ansible_user=ubuntu"
+
+      - name: Clean up credentials
+        if: always()
+        run: rm -f ~/vault_pass.txt ~/.ssh/deploy_key.pem

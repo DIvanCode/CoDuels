@@ -1,0 +1,29 @@
+name: Release Nginx
+
+on:
+  pull_request:
+    branches: [master]
+    types: [closed]
+    paths: [Backend]
+
+permissions:
+  contents: read
+
+jobs:
+  changes:
+    if: github.event.pull_request.merged == true
+    uses: ./.github/workflows/check-backend-component.yml
+    with:
+      component_path: nginx
+
+  release:
+    needs: changes
+    if: needs.changes.outputs.changed == 'true'
+    uses: ./.github/workflows/release-component.yml
+    with:
+      component: nginx
+      build: false
+      deploy_dir: Backend/nginx/ansible/deploy
+      vault: false
+      auth: password
+    secrets: inherit

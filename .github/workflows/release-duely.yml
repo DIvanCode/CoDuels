@@ -1,0 +1,30 @@
+name: Release Duely
+
+on:
+  pull_request:
+    branches: [master]
+    types: [closed]
+    paths: [Backend]
+
+permissions:
+  contents: read
+
+jobs:
+  changes:
+    if: github.event.pull_request.merged == true
+    uses: ./.github/workflows/check-backend-component.yml
+    with:
+      component_path: Duely
+
+  release:
+    needs: changes
+    if: needs.changes.outputs.changed == 'true'
+    uses: ./.github/workflows/release-component.yml
+    with:
+      component: duely
+      build: true
+      build_dir: Backend/Duely/ansible/build
+      deploy_dir: Backend/Duely/ansible/deploy
+      vault: true
+      auth: password
+    secrets: inherit

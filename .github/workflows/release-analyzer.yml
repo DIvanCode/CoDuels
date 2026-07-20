@@ -1,0 +1,31 @@
+name: Release Analyzer
+
+on:
+  pull_request:
+    branches: [master]
+    types: [closed]
+    paths: [Backend]
+
+permissions:
+  contents: read
+
+jobs:
+  changes:
+    if: github.event.pull_request.merged == true
+    uses: ./.github/workflows/check-backend-component.yml
+    with:
+      component_path: Analyzer
+
+  release:
+    needs: changes
+    if: needs.changes.outputs.changed == 'true'
+    uses: ./.github/workflows/release-component.yml
+    with:
+      component: analyzer
+      build: true
+      build_dir: Backend/Analyzer/ansible/build
+      deploy_dir: Backend/Analyzer/ansible/deploy
+      vault: false
+      auth: password
+      train_analyzer: true
+    secrets: inherit

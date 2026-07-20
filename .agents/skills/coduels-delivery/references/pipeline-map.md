@@ -10,7 +10,7 @@
 
 ## Repository model
 
-- Root `CoDuels` owns `Docs/`, `.github/workflows/release-production.yml`, root secrets/variables, and the Backend/Frontend submodule revisions that define a release.
+- Root `CoDuels` owns `Docs/`, the component-specific `.github/workflows/release-*.yml` files, reusable release workflows, root secrets/variables, and the Backend/Frontend submodule revisions that define a release.
 - `Backend` and `Frontend` are submodules with independent pull-request CI. They must not contain production deployment workflows.
 - `Backend/Taski/tasks` is itself a project-owned submodule. Its task-storage deployment is performed only when its revision is included in a promoted Backend revision and then in a merged root CoDuels pull request.
 - `Backend/filestorage` has its own pull-request Go test workflow and no production deployment workflow.
@@ -32,9 +32,11 @@
 
 ## Root production release
 
-`release-production.yml` starts after a pull request into `master` is merged and checks out that exact merge commit rather than the moving branch tip. Its deployment job targets the `production` GitHub Environment: with a required reviewer configured, the job waits for **Review deployments → Approve and deploy** and does not contact production before that approval.
+Each component has a separate `release-<component>.yml` workflow. The workflows start only after a pull request into `master` that changes their root submodule is closed, and they continue only when the pull request was merged. Every deployment checks out the exact merge commit rather than the moving branch tip and targets the `production` GitHub Environment. With a required reviewer configured, every affected component waits for **Review deployments → Approve and deploy** and does not contact production before that approval.
 
-It compares the root Backend and Frontend gitlinks between the pull request base and merge revisions. If Backend changed, it fetches the two Backend commits and examines their paths. The dynamic release matrix deploys only these affected components:
+Frontend releases are selected directly by the root `Frontend` gitlink change. Backend workflows share `check-backend-component.yml`, which compares the Backend gitlinks from the pull request base and merge revisions and reports whether that workflow's explicit component path changed. The reusable `release-component.yml` contains the common checkout, Ansible setup, image build, authentication, deployment, and credential-cleanup steps. There is no dynamic matrix or generated component list.
+
+The component workflows are:
 
 - `Duely` -> build runtime and migration images, then run migration and deploy Duely.
 - `Exesh` -> build Exesh and dashboard images, then deploy Coordinator, Workers, and Dashboard.
@@ -44,7 +46,7 @@ It compares the root Backend and Frontend gitlinks between the pull request base
 - `alloy` -> render vault-protected configuration and recreate Grafana Alloy.
 - Frontend submodule change -> build/push and deploy Frontend.
 
-The workflow uses the immutable root merge SHA as the image tag, serializes releases with the `production` concurrency group, and targets the `production` GitHub Environment. It runs only for an actually merged PR whose target is `master`.
+Each image build uses the immutable root merge SHA as its tag. Releases are serialized per component with a `production-<component>` concurrency group, so a newer release of the same component waits for the running one while unrelated components can proceed independently.
 
 ## Ansible components
 
