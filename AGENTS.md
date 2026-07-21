@@ -4,14 +4,15 @@
 
 - This directory is the primary `CoDuels` Git repository. It owns `Docs/`, shared agent instructions, and the exact backend/frontend revisions tracked together. It does not own production workflows.
 - `Backend/` and `Frontend/` are Git submodules. Develop, validate, and deploy application changes through pull requests in their own repositories, then advance the affected submodule pointer here when the superproject should track the new revision.
-- Run root Git commands for documentation, release configuration, and submodule-pointer changes. Run Git commands inside a submodule only for changes owned by that component repository.
+- Run root Git commands for documentation, shared agent instructions, and submodule-pointer changes. Run Git commands inside a submodule only for changes owned by that component repository.
 - `Backend/filestorage` and `Backend/Taski/tasks` are project-owned submodules. `Backend/Exesh/isolate` and `Backend/Exesh/testlib` are upstream submodules. Do not accidentally include submodule changes in the parent repository.
 
 ## Release ownership
 
 - The root `CoDuels` repository has no GitHub Actions workflows and advancing a root submodule pointer does not deploy anything.
-- Backend production delivery belongs to the path-filtered `*_pull_request.yml` workflows in `CoDuels-Backend`. Each workflow validates the affected component, then builds and/or deploys the pull-request revision; pushes to Backend `master` do not deploy.
-- Frontend production delivery belongs to `frontend_pull_request.yml` in `CoDuels-Frontend`. It validates, builds, and deploys the pull-request revision; pushes to Frontend `master` do not deploy.
+- Backend production delivery belongs to the path-filtered `duely_pull_request.yml`, `analyzer_pull_request.yml`, `alloy_pull_request.yml`, `nginx_pull_request.yml`, `taski_pull_request.yml`, and `exesh_pull_request.yml` workflows in `CoDuels-Backend`. Each component workflow validates its own component, then builds when applicable and deploys the pull-request revision. `e2e_tests_pull_request.yml` runs the Taski-Exesh scenario independently for Taski or Exesh changes; it is not a dependency of their build or deploy jobs.
+- Frontend production delivery belongs to `frontend_pull_request.yml` in `CoDuels-Frontend`. It validates and builds the pull-request revision, then deploys that image with the deploy playbook checked out from the trusted base revision.
+- Backend and Frontend pull-request deployments run automatically without a GitHub Environment approval. Pushes to either component repository's `master` branch do not deploy.
 - Task storage production delivery belongs to `tasks_push.yml` in `CoDuels-Tasks` and runs on pushes to its `master` branch.
 - Keep the required production secrets and variables in the repository that owns each workflow. Same-repository pull requests can use them; pull requests from forks do not receive Actions secrets.
 
@@ -52,6 +53,7 @@
 - For every Taski or Exesh change, run `Backend/e2e/taski-exesh/run.sh` after focused tests. Review and update that scenario when related service contracts, Docker/Compose/Ansible configuration, task fixtures, submodules, infrastructure, or configs change.
 - When adding a cross-service Backend e2e scenario, follow `Backend/e2e/README.md` and add a pull-request workflow whose paths cover all participating services, the scenario, and related configuration/infrastructure without duplicate runs.
 - Never decrypt, print, or replace `ansible/deploy/credentials.yml` unless the user explicitly requests credential maintenance. Never deploy, push images, or run production playbooks without explicit authorization.
+- A push to an open same-repository Backend or Frontend pull request starts applicable automatic production workflows. Treat that push as a production action and perform it only when the user explicitly authorizes the push and its deployment effect.
 - Prefer focused verification. If dependencies or infrastructure are unavailable, report exactly which checks were not run.
 
 ## Verification entry points

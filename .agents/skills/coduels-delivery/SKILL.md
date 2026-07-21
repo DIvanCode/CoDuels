@@ -13,6 +13,7 @@ Read [references/pipeline-map.md](references/pipeline-map.md) before changing an
 
 - Inspect workflows, Dockerfiles, playbooks, and encrypted-variable headers freely.
 - Do not decrypt vault files, expose secrets, log credentials, push images, connect to inventory hosts, or run deploy playbooks unless the user explicitly authorizes that external action.
+- A push to an open same-repository Backend or Frontend pull request can start an automatic production deployment. Do not push such a branch unless the user authorized the push and its deployment effect.
 - Treat a request to review or explain CI as read-only. Do not fix or rerun CI unless requested.
 
 ## Change a pipeline coherently
