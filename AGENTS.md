@@ -2,18 +2,18 @@
 
 ## Workspace shape
 
-- This directory is the primary `CoDuels` Git repository. It owns `Docs/`, release workflows, shared agent instructions, and the exact backend/frontend revisions released together.
-- `Backend/` and `Frontend/` are Git submodules. Develop and commit application changes in their own repositories, then open a `CoDuels` pull request that advances the affected submodule pointer.
+- This directory is the primary `CoDuels` Git repository. It owns `Docs/`, shared agent instructions, and the exact backend/frontend revisions tracked together. It does not own production workflows.
+- `Backend/` and `Frontend/` are Git submodules. Develop, validate, and deploy application changes through pull requests in their own repositories, then advance the affected submodule pointer here when the superproject should track the new revision.
 - Run root Git commands for documentation, release configuration, and submodule-pointer changes. Run Git commands inside a submodule only for changes owned by that component repository.
 - `Backend/filestorage` and `Backend/Taski/tasks` are project-owned submodules. `Backend/Exesh/isolate` and `Backend/Exesh/testlib` are upstream submodules. Do not accidentally include submodule changes in the parent repository.
 
 ## Release ownership
 
-- Production delivery belongs only to this repository's component-specific `.github/workflows/release-*.yml` workflows.
-- A merge into `master` creates a release job for every production component without detecting which submodules or services changed. Every job targets the `production` GitHub Environment and waits for **Review deployments → Approve and deploy**; approve only the components that should be released.
-- During deployment review, explicitly **Reject** or cancel every component that is not part of the release. Never leave an unselected component waiting: its `production-<component>` concurrency group can block or replace a later release of that component.
-- Do not add push-to-production workflows to `CoDuels-Backend`, `CoDuels-Frontend`, or project-owned nested submodules. Their workflows perform pull-request validation only.
-- The `production` GitHub Environment and the release secrets/variable must be configured in this repository after the GitHub rename. Direct pushes to `master` should be blocked by branch protection in root and component repositories, with their respective PR checks required before merge.
+- The root `CoDuels` repository has no GitHub Actions workflows and advancing a root submodule pointer does not deploy anything.
+- Backend production delivery belongs to the path-filtered `*_pull_request.yml` workflows in `CoDuels-Backend`. Each workflow validates the affected component, then builds and/or deploys the pull-request revision; pushes to Backend `master` do not deploy.
+- Frontend production delivery belongs to `frontend_pull_request.yml` in `CoDuels-Frontend`. It validates, builds, and deploys the pull-request revision; pushes to Frontend `master` do not deploy.
+- Task storage production delivery belongs to `tasks_push.yml` in `CoDuels-Tasks` and runs on pushes to its `master` branch.
+- Keep the required production secrets and variables in the repository that owns each workflow. Same-repository pull requests can use them; pull requests from forks do not receive Actions secrets.
 
 ## GitHub issue workflow
 

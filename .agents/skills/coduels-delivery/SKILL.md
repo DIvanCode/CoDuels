@@ -17,12 +17,12 @@ Read [references/pipeline-map.md](references/pipeline-map.md) before changing an
 
 ## Change a pipeline coherently
 
-1. Identify the workflow owner. Root `CoDuels` owns all production release workflows. `Backend`, `Frontend`, `Backend/Taski/tasks`, and `Backend/filestorage` keep only component pull-request validation.
+1. Identify the workflow owner. `Backend` owns component pull-request validation and deployment, `Frontend` owns its pull-request validation and deployment, and `Backend/Taski/tasks` owns its push-to-`master` deployment. Root `CoDuels` and `Backend/filestorage` have no production workflows.
 2. Trace trigger/path filters -> test/build job -> Docker tag -> Ansible variables -> container environment and ports.
 3. Keep the immutable image tag based on `github.sha` unless the release strategy is explicitly changed.
 4. Update workflow secret/variable references and playbook variables together. Never place secret values in YAML.
 5. Preserve vault encryption for backend service credentials and `no_log` on rendered secret-bearing templates.
-6. Keep build and deploy dependencies explicit. A deploy must not run when the image build failed, and must wait for a manual `production` environment approval after a root `CoDuels` pull request is merged.
+6. Keep validation, build, and deploy dependencies explicit. A deploy must not run when validation or the image build failed.
 7. Add least-privilege `permissions`, environments, concurrency, or approvals deliberately; explain rollout effects.
 
 ## Keep cross-service e2e gates coherent
