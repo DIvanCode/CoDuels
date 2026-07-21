@@ -10,18 +10,18 @@
 
 ## Repository topology
 
-`/mnt/d/CoDuels` is the primary `CoDuels` Git repository and release superproject.
+`/mnt/d/CoDuels` is the primary `CoDuels` Git repository and revision-tracking superproject.
 
-- `Docs/` and the component-specific production release workflows are tracked directly by `CoDuels`.
+- `Docs/` and shared agent instructions are tracked directly by `CoDuels`; the root repository has no GitHub Actions workflows.
 - `Backend/` -> `DIvanCode/CoDuels-Backend` submodule.
 - `Frontend/` -> `DIvanCode/CoDuels-Frontend` submodule.
 
-Application changes are reviewed and validated in the component repositories. A root pull request advances one or both submodule revisions; merging it is the only production-release trigger.
+Backend and Frontend application changes are reviewed, validated, and deployed from pull-request workflows in their component repositories. A root pull request may later advance one or both tracked submodule revisions, but does not release them.
 
 Backend submodules:
 
 - `filestorage/` -> project-owned Go library.
-- `Taski/tasks/` -> project-owned task storage, released through the root `CoDuels` workflow when its nested submodule revision changes.
+- `Taski/tasks/` -> project-owned task storage, deployed by its own workflow on pushes to `master`.
 - `Exesh/isolate/` -> upstream sandbox utility.
 - `Exesh/testlib/` -> upstream checker library.
 
@@ -56,7 +56,7 @@ Supported solution languages in the current testing design are C++, Python, and 
 - Go 1.24 service using Chi, pgx, Prometheus, Kafka/REST adapters, and filestorage.
 - Owns task retrieval/files/topics/random selection, Polygon upload, testing strategies, execution graph construction, solution state, and verdict calculation.
 - Main endpoints include `/task/{id}`, `/task/{id}/*`, `/task/list`, `/task/random`, `/task/topics`, `/test`, and `/solutions/{id}/messages`.
-- Task files are mounted from `Taski/tasks/storage` locally and deployed by the root release workflow after the nested submodule revision is promoted through Backend and then CoDuels.
+- Task files are mounted from `Taski/tasks/storage` locally and deployed by the Tasks repository workflow when a revision is pushed to its `master` branch.
 
 ### Exesh
 

@@ -38,6 +38,7 @@ Read [references/execution-map.md](references/execution-map.md) before changing 
 
 - Treat `Backend/e2e/taski-exesh` as a consumer of Taski/Exesh HTTP, message, job, artifact, configuration, task-package, Docker, and isolation contracts.
 - After every Taski or Exesh change, run `Backend/e2e/taski-exesh/run.sh` after focused tests. If Docker or isolation is unavailable, report the exact verification gap.
+- The current `Backend/.github/workflows/e2e_tests_pull_request.yml` runs this scenario for Taski or Exesh pull-request changes. It is independent of the component workflows and does not gate their build or deploy jobs; scenario-only and related root-infrastructure changes are not current trigger paths.
 - When Taski, Exesh, their configs, Docker/Compose/Ansible wiring, submodules, fixtures, or related infrastructure changes, review the scenario and update it in the same change if its services, configs, seeded data, requests, or assertions are stale.
 - For a new cross-service scenario, follow `Backend/e2e/README.md` and add one pull-request workflow whose path filters include all participating services, the scenario, the workflow, and related config/infrastructure paths without duplicating the run for multi-service changes.
 

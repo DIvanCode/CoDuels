@@ -8,11 +8,11 @@ description: Implement and review CoDuels product features across Frontend, Duel
 ## Establish scope
 
 1. Start from `/mnt/d/CoDuels` so the workspace-level instructions and all project skills are discovered.
-2. Identify the owning repository: root `CoDuels` owns `Docs/`, release configuration, and submodule pointers; `Backend` and `Frontend` are submodules that own their application code. Check the applicable root or submodule status before editing.
+2. Identify the owning repository: root `CoDuels` owns `Docs/`, shared agent instructions, and submodule pointers; `Backend` and `Frontend` are submodules that own their application code and pull-request delivery workflows. Check the applicable root or submodule status before editing.
 3. Read [references/project-map.md](references/project-map.md) for the component map and current data flows.
 4. Read [references/verification.md](references/verification.md) before choosing setup or validation commands.
 5. Treat executable code, tests, compose files, Ansible, and workflows as newer than the thesis when they disagree.
-6. After a component change is merged in its own repository, update that submodule pointer through a pull request in root `CoDuels`; that merge is the release decision.
+6. After a component change is merged in its own repository, update that submodule pointer through a pull request in root `CoDuels` when the superproject should track it. The root pointer update does not deploy the component.
 
 ## Route the change
 

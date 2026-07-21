@@ -1,12 +1,12 @@
 # CoDuels
 
-This repository is the release superproject for the CoDuels platform.
+This repository is the revision-tracking superproject for the CoDuels platform.
 
 - `Docs/` contains architecture documentation, slides, and the thesis.
 - `Backend/` is the `CoDuels-Backend` submodule.
 - `Frontend/` is the `CoDuels-Frontend` submodule.
 
-Develop application code through pull requests in the component repositories. To release a component, update its submodule revision in a pull request to this repository. After that root pull request is merged, its release job waits for a `production` environment approval; start deployment with **Review deployments → Approve and deploy**.
+Develop application code through pull requests in the component repositories. Backend and Frontend validate, build, and deploy applicable pull-request revisions from their own workflows without a GitHub Environment approval. Task storage deploys from its own repository on pushes to `master`. This root repository has no GitHub Actions workflows; updating a Backend or Frontend submodule revision here only records the version tracked by the superproject and does not deploy it.
 
 Clone with submodules:
 
