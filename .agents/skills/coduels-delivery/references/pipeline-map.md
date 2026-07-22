@@ -22,7 +22,7 @@
 - `duely_pull_request.yml`: .NET 8 Release tests and PR coverage report for `Duely/**`, followed by the Duely build and deployment.
 - `exesh_pull_request.yml`: Go 1.24 tests plus a Django dashboard system check for `Exesh/**`, followed by the Exesh build and deployment.
 - `taski_pull_request.yml`: Go 1.24 tests for Taski application changes, excluding the nested tasks submodule, followed by the Taski build and deployment.
-- `e2e_tests_pull_request.yml`: an independent isolated Docker Compose Taski-Exesh A+B acceptance flow for `Taski/**` (excluding `Taski/tasks`) and `Exesh/**`. It checks out recursive submodules and runs the same `e2e/taski-exesh/run.sh` entry point used locally. Its result is not listed in the Taski or Exesh build dependencies, and its current paths do not include scenario-only or related root Compose/submodule changes.
+- `e2e_tests_pull_request.yml`: an independent isolated Docker Compose Taski-Exesh A+B acceptance flow for `Taski/**` (excluding `Taski/tasks`), `Exesh/**`, the scenario itself, and the filestorage submodule pointer. It checks out recursive submodules, builds Exesh against that checked-out filestorage revision, and runs the same `e2e/taski-exesh/run.sh` entry point used locally. Its result is not listed in the Taski or Exesh build dependencies.
 - `analyzer_pull_request.yml`: Python 3.10 dependency install, syntax compilation, and baseline/production model training for `Analyzer/**`, followed by another production-model training pass, image build, and deployment.
 - `alloy_pull_request.yml`: validates the Alloy Jinja template, then deploys Alloy.
 - `nginx_pull_request.yml`: validates `nginx/nginx.conf` using the production Nginx image, then deploys Nginx.
