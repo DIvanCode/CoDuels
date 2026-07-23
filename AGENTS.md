@@ -23,6 +23,7 @@
   2. Implement and verify the issue in a separate branch, push it, and open a Draft Pull Request.
   3. Link the issue to the Pull Request with a closing reference and move the project item to **Review** after the Draft Pull Request is created.
 - Preserve unrelated local work. If the current checkout is dirty or belongs to another task, use an isolated worktree for the issue branch.
+- If `gh auth status` reports an invalid or missing login inside the sandbox, retry the same read-only check outside the sandbox before asking the user to reauthenticate; the host credential helper may be unavailable only in the sandbox context.
 - When the user says they left Pull Request comments or asks to check them, immediately implement every unambiguous unresolved actionable thread. Ask for direction only when comments conflict, are ambiguous, or require a material product or architecture choice.
 
 ## Source of truth
