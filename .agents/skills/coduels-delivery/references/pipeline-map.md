@@ -11,7 +11,7 @@
 ## Repository model
 
 - Root `CoDuels` owns `Docs/`, shared agent instructions, and the Backend/Frontend submodule revisions tracked by the superproject. It has no GitHub Actions workflows and does not release components.
-- `Backend` and `Frontend` are submodules with independent pull-request workflows that validate and then deploy the pull-request revision to production.
+- `Backend` and `Frontend` are submodules with independent pull-request workflows that, for non-Draft pull requests, validate and then deploy the pull-request revision to production. Their jobs are skipped while the pull request is a Draft.
 - `Backend/Taski/tasks` is itself a project-owned submodule. Its task-storage deployment runs from that repository on pushes to `master`.
 - `Backend/filestorage` has its own pull-request Go test workflow and no production deployment workflow.
 
@@ -33,7 +33,7 @@
 
 ## Component production delivery
 
-Backend and Frontend production jobs run on the standard `pull_request` activity for pull requests targeting `master`. On `opened`, `synchronize`, and `reopened`, the applicable component validation job runs first; successful validation unlocks the image build when present, and a successful build unlocks deployment. The separate Taski-Exesh e2e workflow runs in parallel and does not gate either component deployment. Pushes to Backend or Frontend `master` do not run deployment workflows.
+Backend and Frontend workflows handle `opened`, `synchronize`, `reopened`, and `ready_for_review` activity for pull requests targeting `master`, but their entry jobs require `github.event.pull_request.draft == false`. Draft pull requests therefore skip validation, build, and deployment. For non-Draft pull requests, the applicable component validation job runs first; successful validation unlocks the image build when present, and a successful build unlocks deployment. The separate Taski-Exesh e2e workflow runs in parallel and does not gate either component deployment. Pushes to Backend or Frontend `master` do not run deployment workflows.
 
 Backend workflows use component path filters, while the Frontend workflow runs for every pull request to its `master`. They deploy automatically after their declared validation/build dependencies succeed and do not reference a GitHub Environment approval gate. For pull requests, `github.sha` is the GitHub-generated pull-request merge revision; image builds and deployments use that same immutable revision tag.
 

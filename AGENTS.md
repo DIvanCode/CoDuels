@@ -12,7 +12,7 @@
 - The root `CoDuels` repository has no GitHub Actions workflows and advancing a root submodule pointer does not deploy anything.
 - Backend production delivery belongs to the path-filtered `duely_pull_request.yml`, `analyzer_pull_request.yml`, `alloy_pull_request.yml`, `nginx_pull_request.yml`, `taski_pull_request.yml`, and `exesh_pull_request.yml` workflows in `CoDuels-Backend`. Each component workflow validates its own component, then builds when applicable and deploys the pull-request revision. `e2e_tests_pull_request.yml` runs the Taski-Exesh scenario independently for Taski or Exesh changes; it is not a dependency of their build or deploy jobs.
 - Frontend production delivery belongs to `frontend_pull_request.yml` in `CoDuels-Frontend`. It validates and builds the pull-request revision, then deploys that image with the deploy playbook checked out from the trusted base revision.
-- Backend and Frontend pull-request deployments run automatically without a GitHub Environment approval. Pushes to either component repository's `master` branch do not deploy.
+- Backend and Frontend pull-request jobs are skipped while a pull request is a Draft. After it is marked Ready for review, applicable validation, build, and production deployment jobs run automatically without a GitHub Environment approval. Pushes to either component repository's `master` branch do not deploy.
 - Task storage production delivery belongs to `tasks_push.yml` in `CoDuels-Tasks` and runs on pushes to its `master` branch.
 - Keep the required production secrets and variables in the repository that owns each workflow. Same-repository pull requests can use them; pull requests from forks do not receive Actions secrets.
 
@@ -25,6 +25,9 @@
 - Preserve unrelated local work. If the current checkout is dirty or belongs to another task, use an isolated worktree for the issue branch.
 - If `gh auth status` reports an invalid or missing login inside the sandbox, retry the same read-only check outside the sandbox before asking the user to reauthenticate; the host credential helper may be unavailable only in the sandbox context.
 - When the user says they left Pull Request comments or asks to check them, immediately implement every unambiguous unresolved actionable thread. Ask for direction only when comments conflict, are ambiguous, or require a material product or architecture choice.
+- After implementing and pushing review feedback, always reply in every addressed review thread with a concise summary of the fix, the commit SHA, and the relevant verification. Do not mark review threads resolved unless the user explicitly asks for that separate action.
+- After fixing an existing Backend or Frontend Pull Request, ensure it is a Draft before every push, then push the verified changes to its branch without asking again. Leave it as a Draft after the push; changing it back to Ready for review is a separate action because that starts validation, build, and possible production deployment. The user has given standing authorization for these Draft conversion and push actions and, when separately making a Pull Request Ready, its automatic production deployment effect.
+- Before opening any Frontend Pull Request and immediately before every later push to a Frontend Pull Request, build the final production bundle and smoke-test that exact bundle in headless Chrome. At minimum verify that the application mounts a non-empty root, no uncaught exception or application-error-boundary error appears in the browser console, and the primary changed flow reaches its expected initial state. Exercise authenticated startup with local test state when the affected code can run after login. A dev-server check is not a substitute. If the smoke test fails or Chrome cannot be run, do not publish or push unless the user explicitly waives this requirement for that push; report the blocker instead.
 
 ## Source of truth
 
@@ -54,12 +57,12 @@
 - For every Taski or Exesh change, run `Backend/e2e/taski-exesh/run.sh` after focused tests. Review and update that scenario when related service contracts, Docker/Compose/Ansible configuration, task fixtures, submodules, infrastructure, or configs change.
 - When adding a cross-service Backend e2e scenario, follow `Backend/e2e/README.md` and add a pull-request workflow whose paths cover all participating services, the scenario, and related configuration/infrastructure without duplicate runs.
 - Never decrypt, print, or replace `ansible/deploy/credentials.yml` unless the user explicitly requests credential maintenance. Never deploy, push images, or run production playbooks without explicit authorization.
-- A push to an open same-repository Backend or Frontend pull request starts applicable automatic production workflows. Treat that push as a production action and perform it only when the user explicitly authorizes the push and its deployment effect.
+- A push to a non-Draft same-repository Backend or Frontend pull request starts applicable automatic production workflows. Treat that push as a production action; this workspace's standing authorization is recorded in the GitHub issue workflow above. Draft Pull Request pushes do not run those jobs.
 - Prefer focused verification. If dependencies or infrastructure are unavailable, report exactly which checks were not run.
 
 ## Verification entry points
 
-- Frontend: from `Frontend/`, run `pnpm install --frozen-lockfile` when needed, then `pnpm lint`, `pnpm fsd:lint`, and `pnpm build`.
+- Frontend: from `Frontend/`, run `pnpm install --frozen-lockfile` when needed, then `pnpm lint`, `pnpm fsd:lint`, `pnpm test` when applicable, and `pnpm build`. Before opening a Frontend Pull Request or pushing another revision to one, serve the resulting production bundle and smoke-test it in headless Chrome as required by the GitHub issue workflow above.
 - Duely: from `Backend/Duely/`, run `dotnet test --configuration Release`.
 - Exesh: from `Backend/Exesh/`, run `go test ./...`.
 - Taski: from `Backend/Taski/`, run `go test ./...`.

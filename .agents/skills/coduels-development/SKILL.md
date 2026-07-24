@@ -45,5 +45,6 @@ description: Implement and review CoDuels product features across Frontend, Duel
 
 1. Run the smallest relevant checks from [references/verification.md](references/verification.md).
 2. Expand to downstream components when a shared contract changed.
-3. Report changed repositories separately and list any checks skipped because infrastructure or dependencies were unavailable.
-4. Do not deploy, push images, or mutate production as part of feature verification.
+3. Before opening or updating a Frontend Pull Request, run the mandatory production-bundle smoke test in headless Chrome described in [references/verification.md](references/verification.md). Do not publish or push when it fails or is unavailable unless the user explicitly waives it for that publication.
+4. Report changed repositories separately and list any checks skipped because infrastructure or dependencies were unavailable.
+5. Do not deploy, push images, or mutate production as part of feature verification.
