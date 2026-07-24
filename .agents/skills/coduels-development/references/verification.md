@@ -35,8 +35,26 @@ Frontend:
 cd Frontend
 pnpm lint
 pnpm fsd:lint
+pnpm test
 pnpm build
 ```
+
+Before opening any Frontend Pull Request and immediately before every later push
+to a Frontend Pull Request, build with the intended deployment `VITE_BASE_URL`,
+serve the resulting production bundle, and smoke-test that exact bundle in
+headless Chrome. The Vite development server is not an acceptable substitute.
+At minimum, verify all of the following:
+
+- the application mounts a non-empty root;
+- the browser console has no uncaught exception or
+  `Application error boundary caught` entry;
+- the primary changed flow reaches its expected initial state;
+- authenticated cold startup is exercised with local test state, without real
+  production credentials, when affected code can run after login.
+
+If Chrome is unavailable or this smoke test fails, stop before publishing or
+pushing. Report the blocker and proceed only if the user explicitly waives the
+browser check for that specific publication.
 
 Duely, matching PR CI:
 
