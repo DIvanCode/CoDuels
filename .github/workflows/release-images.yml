@@ -240,10 +240,26 @@ jobs:
         - `divancode74/coduels-exesh:${{ needs.validate.outputs.version }}`
         - `divancode74/coduels-exesh-dashboard:${{ needs.validate.outputs.version }}`
         - `divancode74/coduels-analyzer:${{ needs.validate.outputs.version }}`
+
+        Box package:
+        - `coduels-box-${{ needs.validate.outputs.version }}.zip`
     steps:
+      - name: Check out release revision
+        uses: actions/checkout@v4
+
+      - name: Package Box contents
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          archive="coduels-box-${VERSION}.zip"
+          cd Box
+          zip -r "${GITHUB_WORKSPACE}/${archive}" .
+          echo "BOX_ARCHIVE=${archive}" >> "$GITHUB_ENV"
+
       - name: Publish release and tag
         run: |
-          gh release create "$TAG" \
+          gh release create "$TAG" "$BOX_ARCHIVE" \
             --repo "$GITHUB_REPOSITORY" \
             --target "$GITHUB_SHA" \
             --title "CoDuels ${VERSION}" \
