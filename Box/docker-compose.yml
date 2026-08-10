@@ -8,6 +8,7 @@
 services:
   nginx:
     image: nginx:1.29.2
+    container_name: nginx
     restart: unless-stopped
     ports:
       - "80:80"
@@ -27,6 +28,7 @@ services:
 
   frontend:
     image: divancode74/coduels-frontend:1.0.0
+    container_name: frontend
     restart: unless-stopped
     environment:
       VITE_BASE_URL: http://nginx:80/api
@@ -37,6 +39,7 @@ services:
 
   duely-postgres:
     image: postgres:17.7
+    container_name: duely-postgres
     restart: unless-stopped
     environment:
       POSTGRES_DB: duely
@@ -57,6 +60,7 @@ services:
 
   duely-migration:
     image: divancode74/coduels-duely-migration:1.0.0
+    container_name: duely-migration
     restart: "no"
     environment:
       DbConnection__ConnectionString: "Server=duely-postgres:5432;Database=duely;Username=duely;Password=coduels-change-me"
@@ -73,6 +77,7 @@ services:
 
   duely:
     image: divancode74/coduels-duely:1.0.0
+    container_name: duely
     restart: unless-stopped
     env_file:
       - ./env/duely.env
@@ -98,6 +103,7 @@ services:
 
   taski-postgres:
     image: postgres:17.7
+    container_name: taski-postgres
     restart: unless-stopped
     environment:
       POSTGRES_DB: taski
@@ -118,6 +124,7 @@ services:
 
   taski:
     image: divancode74/coduels-taski:1.0.0
+    container_name: taski
     restart: unless-stopped
     env_file:
       - ./env/taski.env
@@ -143,6 +150,7 @@ services:
 
   exesh-postgres:
     image: postgres:17.7
+    container_name: exesh-postgres
     restart: unless-stopped
     environment:
       POSTGRES_DB: exesh
@@ -163,6 +171,7 @@ services:
 
   coordinator:
     image: divancode74/coduels-exesh:1.0.0
+    container_name: exesh-coordinator
     command: ["/app/bin/coordinator"]
     restart: unless-stopped
     env_file:
@@ -184,6 +193,7 @@ services:
 
   worker-1:
     image: divancode74/coduels-exesh:1.0.0
+    container_name: exesh-worker-1
     command: ["/app/bin/worker"]
     restart: unless-stopped
     privileged: true # isolate требует привилегий ядра; используйте workers только на выделенной машине.
@@ -206,6 +216,7 @@ services:
 
   worker-2:
     image: divancode74/coduels-exesh:1.0.0
+    container_name: exesh-worker-2
     command: ["/app/bin/worker"]
     restart: unless-stopped
     privileged: true # isolate требует привилегий ядра; используйте workers только на выделенной машине.
@@ -228,6 +239,7 @@ services:
 
   dashboard:
     image: divancode74/coduels-exesh-dashboard:1.0.0
+    container_name: exesh-dashboard
     restart: unless-stopped
     env_file:
       - ./env/exesh-dashboard.env
@@ -243,6 +255,7 @@ services:
 
   analyzer:
     image: divancode74/coduels-analyzer:1.0.0
+    container_name: analyzer
     restart: unless-stopped
     expose:
       - "8000"
