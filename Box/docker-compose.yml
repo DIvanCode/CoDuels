@@ -1,6 +1,6 @@
 # Автономный single-host стек CoDuels v1.0.0.
 # Все прикладные образы привязаны к конкретному релизу; Kafka и ZooKeeper не используются.
-# Настройки и их описания находятся в отдельных файлах каталога ./env.
+# Изменяемые настройки и их описания находятся в отдельных файлах каталога ./env.
 #
 # ВАЖНО: значения паролей и JWT-секрета запускают стек «из коробки», но их нельзя
 # оставлять на сервере, доступном из интернета.
@@ -47,7 +47,7 @@ services:
       retries: 30
       start_period: 10s
     volumes:
-      - duely-postgres-data:/var/lib/postgresql/data
+      - duely-postgres:/var/lib/postgresql/data
     networks:
       - coduels
 
@@ -72,6 +72,8 @@ services:
     restart: unless-stopped
     env_file:
       - ./env/duely.env
+    environment:
+      ASPNETCORE_ENVIRONMENT: Box
     expose:
       - "5001"
     depends_on:
@@ -98,7 +100,7 @@ services:
       retries: 30
       start_period: 10s
     volumes:
-      - taski-postgres-data:/var/lib/postgresql/data
+      - taski-postgres:/var/lib/postgresql/data
     networks:
       - coduels
 
@@ -132,7 +134,7 @@ services:
       retries: 30
       start_period: 10s
     volumes:
-      - exesh-postgres-data:/var/lib/postgresql/data
+      - exesh-postgres:/var/lib/postgresql/data
     networks:
       - coduels
 
@@ -142,11 +144,11 @@ services:
     restart: unless-stopped
     env_file:
       - ./env/exesh-coordinator.env
+    environment:
+      CONFIG_PATH: /app/config/coordinator.yml
     expose:
       - "5253"
       - "9090"
-    volumes:
-      - exesh-coordinator-storage:/file_storage/coordinator
     depends_on:
       exesh-postgres:
         condition: service_healthy
@@ -161,11 +163,11 @@ services:
     env_file:
       - ./env/exesh-worker.env
       - ./env/exesh-worker-1.env
+    environment:
+      CONFIG_PATH: /app/config/worker.yml
     expose:
       - "5254"
       - "9091"
-    volumes:
-      - exesh-worker-1-storage:/file_storage/worker-1
     depends_on:
       coordinator:
         condition: service_started
@@ -180,11 +182,11 @@ services:
     env_file:
       - ./env/exesh-worker.env
       - ./env/exesh-worker-2.env
+    environment:
+      CONFIG_PATH: /app/config/worker.yml
     expose:
       - "5255"
       - "9092"
-    volumes:
-      - exesh-worker-2-storage:/file_storage/worker-2
     depends_on:
       coordinator:
         condition: service_started
@@ -207,8 +209,6 @@ services:
   analyzer:
     image: divancode74/coduels-analyzer:1.0.0
     restart: unless-stopped
-    env_file:
-      - ./env/analyzer.env
     expose:
       - "8000"
     networks:
@@ -220,10 +220,7 @@ networks:
     driver: bridge
 
 volumes:
-  duely-postgres-data:
-  taski-postgres-data:
-  exesh-postgres-data:
+  duely-postgres:
+  taski-postgres:
+  exesh-postgres:
   taski-storage: # Постоянное хранилище пакетов задач; его нужно наполнить task storage данными.
-  exesh-coordinator-storage:
-  exesh-worker-1-storage:
-  exesh-worker-2-storage:
