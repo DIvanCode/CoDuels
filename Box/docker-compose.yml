@@ -1,6 +1,7 @@
 # Автономный single-host стек CoDuels v1.0.0.
 # Все прикладные образы привязаны к конкретному релизу; Kafka и ZooKeeper не используются.
-# Изменяемые настройки и их описания находятся в отдельных файлах каталога ./env.
+# Порты, связность сервисов и полная конфигурация БД заданы здесь.
+# Остальные изменяемые настройки и их описания находятся в файлах каталога ./env.
 #
 # ВАЖНО: значения паролей и JWT-секрета запускают стек «из коробки», но их нельзя
 # оставлять на сервере, доступном из интернета.
@@ -28,8 +29,8 @@ services:
   frontend:
     image: divancode74/coduels-frontend:1.0.0
     restart: unless-stopped
-    env_file:
-      - ./env/frontend.env
+    environment:
+      VITE_BASE_URL: /api
     expose:
       - "80"
     networks:
@@ -38,8 +39,12 @@ services:
   duely-postgres:
     image: postgres:17.7
     restart: unless-stopped
-    env_file:
-      - ./env/duely-postgres.env
+    environment:
+      POSTGRES_DB: duely
+      POSTGRES_USER: duely
+      POSTGRES_PASSWORD: coduels-change-me
+    expose:
+      - "5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 5s
@@ -54,8 +59,8 @@ services:
   duely-migration:
     image: divancode74/coduels-duely-migration:1.0.0
     restart: "no"
-    env_file:
-      - ./env/duely-migration.env
+    environment:
+      DbConnection__ConnectionString: "Server=duely-postgres:5432;Database=duely;Username=duely;Password=coduels-change-me"
     command: >-
       bash -c '/root/.dotnet/tools/dotnet-ef database update
       --connection "$$DbConnection__ConnectionString"
@@ -74,6 +79,12 @@ services:
       - ./env/duely.env
     environment:
       ASPNETCORE_ENVIRONMENT: Box
+      ASPNETCORE_URLS: "http://+:5001"
+      DbConnection__ConnectionString: "Server=duely-postgres:5432;Database=duely;Username=duely;Password=coduels-change-me"
+      Taski__BaseUrl: http://taski:5252
+      Exesh__BaseUrl: http://coordinator:5253
+      Analyzer__BaseUrl: http://analyzer:8000
+      Kafka__BootstrapServers: ""
     expose:
       - "5001"
     depends_on:
@@ -91,8 +102,12 @@ services:
   taski-postgres:
     image: postgres:17.7
     restart: unless-stopped
-    env_file:
-      - ./env/taski-postgres.env
+    environment:
+      POSTGRES_DB: taski
+      POSTGRES_USER: taski
+      POSTGRES_PASSWORD: coduels-change-me
+    expose:
+      - "5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 5s
@@ -109,6 +124,15 @@ services:
     restart: unless-stopped
     env_file:
       - ./env/taski.env
+    environment:
+      HTTP_SERVER_ADDR: 0.0.0.0:5252
+      HTTP_SERVER_METRICS_ADDR: 0.0.0.0:9090
+      DB_CONNECTION_STRING: "host=taski-postgres port=5432 database=taski user=taski password=coduels-change-me"
+      EXECUTE_ENDPOINT: http://coordinator:5253
+      EXECUTE_DOWNLOAD_TASK_ENDPOINT: http://taski:5252
+      EVENT_CONSUMER_BROKERS: ""
+      EVENT_CONSUMER_REST_ENDPOINT: http://coordinator:5253
+      MESSAGE_DISPATCHER_KAFKA_BROKERS: ""
     expose:
       - "5252"
       - "9090"
@@ -125,8 +149,12 @@ services:
   exesh-postgres:
     image: postgres:17.7
     restart: unless-stopped
-    env_file:
-      - ./env/exesh-postgres.env
+    environment:
+      POSTGRES_DB: exesh
+      POSTGRES_USER: coordinator
+      POSTGRES_PASSWORD: coduels-change-me
+    expose:
+      - "5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 5s
@@ -146,6 +174,11 @@ services:
       - ./env/exesh-coordinator.env
     environment:
       CONFIG_PATH: /app/config/coordinator.yml
+      HTTP_SERVER_ADDR: 0.0.0.0:5253
+      HTTP_SERVER_METRICS_ADDR: 0.0.0.0:9090
+      STORAGE_CONNECTION_STRING: "host=exesh-postgres port=5432 database=exesh user=coordinator password=coduels-change-me"
+      JOB_FACTORY_FILESTORAGE_ENDPOINT: http://coordinator:5253
+      DISPATCHER_BROKERS: ""
     expose:
       - "5253"
       - "9090"
@@ -165,6 +198,10 @@ services:
       - ./env/exesh-worker-1.env
     environment:
       CONFIG_PATH: /app/config/worker.yml
+      HTTP_SERVER_ADDR: 0.0.0.0:5254
+      HTTP_SERVER_METRICS_ADDR: 0.0.0.0:9091
+      WORKER_ID: http://worker-1:5254
+      WORKER_COORDINATOR_ENDPOINT: http://coordinator:5253
     expose:
       - "5254"
       - "9091"
@@ -184,6 +221,10 @@ services:
       - ./env/exesh-worker-2.env
     environment:
       CONFIG_PATH: /app/config/worker.yml
+      HTTP_SERVER_ADDR: 0.0.0.0:5255
+      HTTP_SERVER_METRICS_ADDR: 0.0.0.0:9092
+      WORKER_ID: http://worker-2:5255
+      WORKER_COORDINATOR_ENDPOINT: http://coordinator:5253
     expose:
       - "5255"
       - "9092"
@@ -198,6 +239,8 @@ services:
     restart: unless-stopped
     env_file:
       - ./env/exesh-dashboard.env
+    environment:
+      EXESH_DASHBOARD_DB_CONNECTION_STRING: "host=exesh-postgres port=5432 database=exesh user=coordinator password=coduels-change-me"
     expose:
       - "9000"
     depends_on:
