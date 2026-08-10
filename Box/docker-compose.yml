@@ -84,7 +84,6 @@ services:
       Taski__BaseUrl: http://taski:5252
       Exesh__BaseUrl: http://coordinator:5253
       Analyzer__BaseUrl: http://analyzer:8000
-      Kafka__BootstrapServers: ""
     expose:
       - "5001"
     depends_on:
@@ -130,9 +129,7 @@ services:
       DB_CONNECTION_STRING: "host=taski-postgres port=5432 database=taski user=taski password=coduels-change-me"
       EXECUTE_ENDPOINT: http://coordinator:5253
       EXECUTE_DOWNLOAD_TASK_ENDPOINT: http://taski:5252
-      EVENT_CONSUMER_BROKERS: ""
       EVENT_CONSUMER_REST_ENDPOINT: http://coordinator:5253
-      MESSAGE_DISPATCHER_KAFKA_BROKERS: ""
     expose:
       - "5252"
       - "9090"
@@ -178,7 +175,6 @@ services:
       HTTP_SERVER_METRICS_ADDR: 0.0.0.0:9090
       STORAGE_CONNECTION_STRING: "host=exesh-postgres port=5432 database=exesh user=coordinator password=coduels-change-me"
       JOB_FACTORY_FILESTORAGE_ENDPOINT: http://coordinator:5253
-      DISPATCHER_BROKERS: ""
     expose:
       - "5253"
       - "9090"
