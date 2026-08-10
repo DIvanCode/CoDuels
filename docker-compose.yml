@@ -1,0 +1,229 @@
+# Автономный single-host стек CoDuels v1.0.0.
+# Все прикладные образы привязаны к конкретному релизу; Kafka и ZooKeeper не используются.
+# Настройки и их описания находятся в отдельных файлах каталога ./env.
+#
+# ВАЖНО: значения паролей и JWT-секрета запускают стек «из коробки», но их нельзя
+# оставлять на сервере, доступном из интернета.
+
+services:
+  nginx:
+    image: nginx:1.29.2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      frontend:
+        condition: service_started
+      duely:
+        condition: service_started
+      taski:
+        condition: service_started
+      dashboard:
+        condition: service_started
+    networks:
+      - coduels
+
+  frontend:
+    image: divancode74/coduels-frontend:1.0.0
+    restart: unless-stopped
+    env_file:
+      - ./env/frontend.env
+    expose:
+      - "80"
+    networks:
+      - coduels
+
+  duely-postgres:
+    image: postgres:17.7
+    restart: unless-stopped
+    env_file:
+      - ./env/duely-postgres.env
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 10s
+    volumes:
+      - duely-postgres-data:/var/lib/postgresql/data
+    networks:
+      - coduels
+
+  duely-migration:
+    image: divancode74/coduels-duely-migration:1.0.0
+    restart: "no"
+    env_file:
+      - ./env/duely-migration.env
+    command: >-
+      bash -c '/root/.dotnet/tools/dotnet-ef database update
+      --connection "$$DbConnection__ConnectionString"
+      --startup-project /app/src/Duely
+      --project /app/src/Duely.Infrastructure.DataAccess.EntityFramework'
+    depends_on:
+      duely-postgres:
+        condition: service_healthy
+    networks:
+      - coduels
+
+  duely:
+    image: divancode74/coduels-duely:1.0.0
+    restart: unless-stopped
+    env_file:
+      - ./env/duely.env
+    expose:
+      - "5001"
+    depends_on:
+      duely-migration:
+        condition: service_completed_successfully
+      taski:
+        condition: service_started
+      coordinator:
+        condition: service_started
+      analyzer:
+        condition: service_started
+    networks:
+      - coduels
+
+  taski-postgres:
+    image: postgres:17.7
+    restart: unless-stopped
+    env_file:
+      - ./env/taski-postgres.env
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 10s
+    volumes:
+      - taski-postgres-data:/var/lib/postgresql/data
+    networks:
+      - coduels
+
+  taski:
+    image: divancode74/coduels-taski:1.0.0
+    restart: unless-stopped
+    env_file:
+      - ./env/taski.env
+    expose:
+      - "5252"
+      - "9090"
+    volumes:
+      - taski-storage:/app/file_storage/storage
+    depends_on:
+      taski-postgres:
+        condition: service_healthy
+      coordinator:
+        condition: service_started
+    networks:
+      - coduels
+
+  exesh-postgres:
+    image: postgres:17.7
+    restart: unless-stopped
+    env_file:
+      - ./env/exesh-postgres.env
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 10s
+    volumes:
+      - exesh-postgres-data:/var/lib/postgresql/data
+    networks:
+      - coduels
+
+  coordinator:
+    image: divancode74/coduels-exesh:1.0.0
+    command: ["/app/bin/coordinator"]
+    restart: unless-stopped
+    env_file:
+      - ./env/exesh-coordinator.env
+    expose:
+      - "5253"
+      - "9090"
+    volumes:
+      - exesh-coordinator-storage:/file_storage/coordinator
+    depends_on:
+      exesh-postgres:
+        condition: service_healthy
+    networks:
+      - coduels
+
+  worker-1:
+    image: divancode74/coduels-exesh:1.0.0
+    command: ["/app/bin/worker"]
+    restart: unless-stopped
+    privileged: true # isolate требует привилегий ядра; используйте workers только на выделенной машине.
+    env_file:
+      - ./env/exesh-worker.env
+      - ./env/exesh-worker-1.env
+    expose:
+      - "5254"
+      - "9091"
+    volumes:
+      - exesh-worker-1-storage:/file_storage/worker-1
+    depends_on:
+      coordinator:
+        condition: service_started
+    networks:
+      - coduels
+
+  worker-2:
+    image: divancode74/coduels-exesh:1.0.0
+    command: ["/app/bin/worker"]
+    restart: unless-stopped
+    privileged: true # isolate требует привилегий ядра; используйте workers только на выделенной машине.
+    env_file:
+      - ./env/exesh-worker.env
+      - ./env/exesh-worker-2.env
+    expose:
+      - "5255"
+      - "9092"
+    volumes:
+      - exesh-worker-2-storage:/file_storage/worker-2
+    depends_on:
+      coordinator:
+        condition: service_started
+    networks:
+      - coduels
+
+  dashboard:
+    image: divancode74/coduels-exesh-dashboard:1.0.0
+    restart: unless-stopped
+    env_file:
+      - ./env/exesh-dashboard.env
+    expose:
+      - "9000"
+    depends_on:
+      exesh-postgres:
+        condition: service_healthy
+    networks:
+      - coduels
+
+  analyzer:
+    image: divancode74/coduels-analyzer:1.0.0
+    restart: unless-stopped
+    env_file:
+      - ./env/analyzer.env
+    expose:
+      - "8000"
+    networks:
+      - coduels
+
+networks:
+  coduels:
+    name: coduels
+    driver: bridge
+
+volumes:
+  duely-postgres-data:
+  taski-postgres-data:
+  exesh-postgres-data:
+  taski-storage: # Постоянное хранилище пакетов задач; его нужно наполнить task storage данными.
+  exesh-coordinator-storage:
+  exesh-worker-1-storage:
+  exesh-worker-2-storage:
