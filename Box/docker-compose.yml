@@ -1,5 +1,4 @@
 # Автономный single-host стек CoDuels v1.0.0.
-# Все прикладные образы привязаны к конкретному релизу; Kafka и ZooKeeper не используются.
 # Порты, связность сервисов и полная конфигурация БД заданы здесь.
 # Остальные изменяемые настройки и их описания находятся в файлах каталога ./env.
 #
@@ -30,7 +29,7 @@ services:
     image: divancode74/coduels-frontend:1.0.0
     restart: unless-stopped
     environment:
-      VITE_BASE_URL: /api
+      VITE_BASE_URL: http://nginx:80/api
     expose:
       - "80"
     networks:
@@ -78,7 +77,6 @@ services:
     env_file:
       - ./env/duely.env
     environment:
-      ASPNETCORE_ENVIRONMENT: Box
       ASPNETCORE_URLS: "http://+:5001"
       DbConnection__ConnectionString: "Server=duely-postgres:5432;Database=duely;Username=duely;Password=coduels-change-me"
       Taski__BaseUrl: http://taski:5252
@@ -262,4 +260,9 @@ volumes:
   duely-postgres:
   taski-postgres:
   exesh-postgres:
-  taski-storage: # Постоянное хранилище пакетов задач; его нужно наполнить task storage данными.
+  taski-storage:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /tasks/storage
