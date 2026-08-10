@@ -11,7 +11,7 @@
 
 ## Repository model
 
-- Root `CoDuels` owns `Docs/`, shared agent instructions, the Backend/Frontend submodule revisions tracked by the superproject, and release packaging. A change to its `VERSION` file on `master` builds versioned Docker archives from the pinned component revisions and publishes a GitHub Release. It does not push the images to a registry or deploy them.
+- Root `CoDuels` owns `Docs/`, shared agent instructions, the Backend/Frontend submodule revisions tracked by the superproject, and manual release publishing. Given a semantic version, its release workflow builds the pinned component revisions through their existing Ansible playbooks, pushes the images to Docker Hub, and creates the matching Git tag and GitHub Release. It does not deploy services.
 - `Backend` and `Frontend` are submodules with independent pull-request workflows that, for non-Draft pull requests, validate and then deploy the pull-request revision to production. Their jobs are skipped while the pull request is a Draft.
 - `Backend/Taski/tasks` is itself a project-owned submodule. Its task-storage deployment runs from that repository on pushes to `master`.
 - `Backend/filestorage` has its own pull-request Go test workflow and no production deployment workflow.
@@ -58,9 +58,9 @@ The root repository does not participate in production delivery. Advancing its B
 
 ## Root release packaging
 
-`release-images.yml` runs on pushes to `master` that change `VERSION`. It validates a new semantic version, builds the seven release images from the component revisions pinned by that root commit, uploads compressed Docker archives between jobs, and publishes them with checksums under the `v<version>` GitHub Release. Exesh Coordinator and Worker receive separate tags and archives from the same combined Exesh build. Analyzer models are trained before its image is built.
+`release-images.yml` is started manually from `master` with a semantic version such as `1.0.0`. It rejects non-`master` runs and versions whose `v<version>` tag already exists. Its component jobs invoke the existing Ansible build playbooks, which build and push Frontend, Duely runtime and migration, Taski, the combined Exesh image and dashboard, and Analyzer. Analyzer models are trained before its playbook runs. After every image succeeds, the final job creates the tag and GitHub Release for the exact workflow revision.
 
-Release image names use `divancode74-{service}:{version}` exactly as distributable local tags. The workflow does not log in to Docker Hub, push images, read deployment credentials, or run Ansible. The optional root `VITE_BASE_URL` variable configures the Frontend build and defaults to `/api`.
+Release image names use `divancode74/coduels-{service}:{version}` on Docker Hub. The workflow requires the root `DOCKER_PASSWORD` secret, grants `contents: write` only to the final release job, and does not read deployment credentials or run deployment playbooks. Frontend receives `VITE_BASE_URL` when the container starts rather than during the build.
 
 ## Ansible components
 
@@ -78,7 +78,7 @@ Configure values in the repository that owns each workflow; repository-scoped se
 - Backend secrets: `DOCKER_PASSWORD`, `SSH_PASSWORD`, and `VAULT_PASSWORD`.
 - Frontend secrets: `DOCKER_PASSWORD` and `SSH_PRIVATE_KEY`; Frontend variable: `VITE_BASE_URL`.
 - Tasks secret: `SSH_PASSWORD`.
-- Root release packaging has no required secrets. Its release job receives job-scoped `contents: write` permission, while all build jobs remain read-only. Root variable: optional `VITE_BASE_URL`.
+- Root release publishing requires `DOCKER_PASSWORD`. Its final release job receives job-scoped `contents: write` permission, while build jobs remain read-only apart from authenticated Docker Hub pushes.
 - Backend and Frontend branch protection should require the applicable pull-request checks. A same-repository pull request can receive Actions secrets and deploy; a fork pull request does not receive those secrets.
 - Root branch protection can still require pull requests for submodule-pointer and documentation changes, but merging root changes does not trigger deployment.
 

@@ -1,10 +1,12 @@
 name: Release images
 
 on:
-  push:
-    branches: [master]
-    paths:
-      - VERSION
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Semantic version without the v prefix, for example 1.0.0
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -14,43 +16,52 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  version:
-    name: Validate version
+  validate:
+    name: Validate release
     runs-on: ubuntu-latest
     outputs:
-      value: ${{ steps.version.outputs.value }}
+      version: ${{ steps.release.outputs.version }}
+      tag: ${{ steps.release.outputs.tag }}
     steps:
       - name: Check out release revision
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Read and validate version
-        id: version
+      - name: Validate branch, version, and tag
+        id: release
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
         shell: bash
         run: |
           set -euo pipefail
 
-          version=$(< VERSION)
-          if [[ ! "$version" =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-[0-9A-Za-z]+([.-][0-9A-Za-z]+)*)?$ ]]; then
-            echo "VERSION must contain a semantic version such as 1.0.0" >&2
+          if [[ "$GITHUB_REF" != "refs/heads/master" ]]; then
+            echo "Run releases from the master branch" >&2
             exit 1
           fi
 
-          if git rev-parse --verify --quiet "refs/tags/v${version}^{commit}" >/dev/null; then
-            echo "Release tag v${version} already exists; increment VERSION before merging" >&2
+          version="$INPUT_VERSION"
+          if [[ ! "$version" =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
+            echo "version must be a semantic version such as 1.0.0" >&2
             exit 1
           fi
 
-          echo "value=$version" >> "$GITHUB_OUTPUT"
+          tag="v${version}"
+          if git rev-parse --verify --quiet "refs/tags/${tag}^{commit}" >/dev/null; then
+            echo "Release tag ${tag} already exists" >&2
+            exit 1
+          fi
+
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
 
   build-frontend:
-    name: Build Frontend image
-    needs: version
+    name: Build and push Frontend
+    needs: validate
     runs-on: ubuntu-latest
     env:
-      VERSION: ${{ needs.version.outputs.value }}
-      VITE_BASE_URL: ${{ vars.VITE_BASE_URL || '/api' }}
+      VERSION: ${{ needs.validate.outputs.version }}
     steps:
       - name: Check out release revision
         uses: actions/checkout@v4
@@ -58,35 +69,28 @@ jobs:
       - name: Check out Frontend
         run: git submodule update --init --depth 1 Frontend
 
-      - name: Build and archive Frontend
-        shell: bash
-        run: |
-          set -euo pipefail
+      - name: Install Ansible
+        run: python3 -m pip install ansible docker
 
-          image="divancode74-coduels-frontend:${VERSION}"
-          asset="$RUNNER_TEMP/release-assets/divancode74-coduels-frontend-${VERSION}.tar.gz"
-          mkdir -p "$(dirname "$asset")"
+      - name: Log in to Docker Hub
+        env:
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: printf '%s' "$DOCKER_PASSWORD" | docker login -u divancode74 --password-stdin
 
-          docker build \
-            --build-arg "VITE_BASE_URL=${VITE_BASE_URL}" \
-            --tag "$image" \
-            Frontend
-          docker save "$image" | gzip -1 > "$asset"
+      - name: Run Frontend build playbook
+        working-directory: Frontend/ansible/build
+        run: ansible-playbook -i inventory playbook.yml --extra-vars="version=${VERSION}"
 
-      - name: Upload Frontend image
-        uses: actions/upload-artifact@v4
-        with:
-          name: release-image-frontend-${{ needs.version.outputs.value }}
-          path: ${{ runner.temp }}/release-assets/*.tar.gz
-          if-no-files-found: error
-          retention-days: 1
+      - name: Log out of Docker Hub
+        if: always()
+        run: docker logout
 
   build-duely:
-    name: Build Duely images
-    needs: version
+    name: Build and push Duely
+    needs: validate
     runs-on: ubuntu-latest
     env:
-      VERSION: ${{ needs.version.outputs.value }}
+      VERSION: ${{ needs.validate.outputs.version }}
     steps:
       - name: Check out release revision
         uses: actions/checkout@v4
@@ -94,35 +98,28 @@ jobs:
       - name: Check out Backend
         run: git submodule update --init --depth 1 Backend
 
-      - name: Build and archive Duely
-        shell: bash
-        run: |
-          set -euo pipefail
+      - name: Install Ansible
+        run: python3 -m pip install ansible docker
 
-          runtime_image="divancode74-coduels-duely:${VERSION}"
-          migration_image="divancode74-coduels-duely-migration:${VERSION}"
-          asset_dir="$RUNNER_TEMP/release-assets"
-          mkdir -p "$asset_dir"
+      - name: Log in to Docker Hub
+        env:
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: printf '%s' "$DOCKER_PASSWORD" | docker login -u divancode74 --password-stdin
 
-          docker build --target runtime --tag "$runtime_image" Backend/Duely
-          docker build --target migration --tag "$migration_image" Backend/Duely
-          docker save "$runtime_image" | gzip -1 > "$asset_dir/divancode74-coduels-duely-${VERSION}.tar.gz"
-          docker save "$migration_image" | gzip -1 > "$asset_dir/divancode74-coduels-duely-migration-${VERSION}.tar.gz"
+      - name: Run Duely build playbook
+        working-directory: Backend/Duely/ansible/build
+        run: ansible-playbook -i inventory playbook.yml --extra-vars="version=${VERSION}"
 
-      - name: Upload Duely images
-        uses: actions/upload-artifact@v4
-        with:
-          name: release-image-duely-${{ needs.version.outputs.value }}
-          path: ${{ runner.temp }}/release-assets/*.tar.gz
-          if-no-files-found: error
-          retention-days: 1
+      - name: Log out of Docker Hub
+        if: always()
+        run: docker logout
 
   build-taski:
-    name: Build Taski image
-    needs: version
+    name: Build and push Taski
+    needs: validate
     runs-on: ubuntu-latest
     env:
-      VERSION: ${{ needs.version.outputs.value }}
+      VERSION: ${{ needs.validate.outputs.version }}
     steps:
       - name: Check out release revision
         uses: actions/checkout@v4
@@ -130,32 +127,28 @@ jobs:
       - name: Check out Backend
         run: git submodule update --init --depth 1 Backend
 
-      - name: Build and archive Taski
-        shell: bash
-        run: |
-          set -euo pipefail
+      - name: Install Ansible
+        run: python3 -m pip install ansible docker
 
-          image="divancode74-coduels-taski:${VERSION}"
-          asset="$RUNNER_TEMP/release-assets/divancode74-coduels-taski-${VERSION}.tar.gz"
-          mkdir -p "$(dirname "$asset")"
+      - name: Log in to Docker Hub
+        env:
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: printf '%s' "$DOCKER_PASSWORD" | docker login -u divancode74 --password-stdin
 
-          docker build --tag "$image" Backend/Taski
-          docker save "$image" | gzip -1 > "$asset"
+      - name: Run Taski build playbook
+        working-directory: Backend/Taski/ansible/build
+        run: ansible-playbook -i inventory playbook.yml --extra-vars="version=${VERSION}"
 
-      - name: Upload Taski image
-        uses: actions/upload-artifact@v4
-        with:
-          name: release-image-taski-${{ needs.version.outputs.value }}
-          path: ${{ runner.temp }}/release-assets/*.tar.gz
-          if-no-files-found: error
-          retention-days: 1
+      - name: Log out of Docker Hub
+        if: always()
+        run: docker logout
 
   build-exesh:
-    name: Build Exesh images
-    needs: version
+    name: Build and push Exesh
+    needs: validate
     runs-on: ubuntu-latest
     env:
-      VERSION: ${{ needs.version.outputs.value }}
+      VERSION: ${{ needs.validate.outputs.version }}
     steps:
       - name: Check out release revision
         uses: actions/checkout@v4
@@ -165,37 +158,28 @@ jobs:
           git submodule update --init --depth 1 Backend
           git -C Backend submodule update --init --depth 1 Exesh/isolate Exesh/testlib
 
-      - name: Build and archive Exesh
-        shell: bash
-        run: |
-          set -euo pipefail
+      - name: Install Ansible
+        run: python3 -m pip install ansible docker
 
-          coordinator_image="divancode74-coduels-exesh-coordinator:${VERSION}"
-          worker_image="divancode74-coduels-exesh-worker:${VERSION}"
-          asset_dir="$RUNNER_TEMP/release-assets"
-          mkdir -p "$asset_dir"
+      - name: Log in to Docker Hub
+        env:
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: printf '%s' "$DOCKER_PASSWORD" | docker login -u divancode74 --password-stdin
 
-          docker build \
-            --tag "$coordinator_image" \
-            --tag "$worker_image" \
-            Backend/Exesh
-          docker save "$coordinator_image" | gzip -1 > "$asset_dir/divancode74-coduels-exesh-coordinator-${VERSION}.tar.gz"
-          docker save "$worker_image" | gzip -1 > "$asset_dir/divancode74-coduels-exesh-worker-${VERSION}.tar.gz"
+      - name: Run Exesh build playbook
+        working-directory: Backend/Exesh/ansible/build
+        run: ansible-playbook -i inventory playbook.yml --extra-vars="version=${VERSION}"
 
-      - name: Upload Exesh images
-        uses: actions/upload-artifact@v4
-        with:
-          name: release-image-exesh-${{ needs.version.outputs.value }}
-          path: ${{ runner.temp }}/release-assets/*.tar.gz
-          if-no-files-found: error
-          retention-days: 1
+      - name: Log out of Docker Hub
+        if: always()
+        run: docker logout
 
   build-analyzer:
-    name: Build Analyzer image
-    needs: version
+    name: Build and push Analyzer
+    needs: validate
     runs-on: ubuntu-latest
     env:
-      VERSION: ${{ needs.version.outputs.value }}
+      VERSION: ${{ needs.validate.outputs.version }}
     steps:
       - name: Check out release revision
         uses: actions/checkout@v4
@@ -210,36 +194,30 @@ jobs:
           cache: pip
           cache-dependency-path: Backend/Analyzer/requirements.txt
 
-      - name: Train Analyzer models
+      - name: Install dependencies and train Analyzer models
         working-directory: Backend/Analyzer
         run: |
+          python -m pip install ansible docker
           python -m pip install -r requirements.txt
           python train.py --data-dir data/train
 
-      - name: Build and archive Analyzer
-        shell: bash
-        run: |
-          set -euo pipefail
+      - name: Log in to Docker Hub
+        env:
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: printf '%s' "$DOCKER_PASSWORD" | docker login -u divancode74 --password-stdin
 
-          image="divancode74-coduels-analyzer:${VERSION}"
-          asset="$RUNNER_TEMP/release-assets/divancode74-coduels-analyzer-${VERSION}.tar.gz"
-          mkdir -p "$(dirname "$asset")"
+      - name: Run Analyzer build playbook
+        working-directory: Backend/Analyzer/ansible/build
+        run: ansible-playbook -i inventory playbook.yml --extra-vars="version=${VERSION}"
 
-          docker build --tag "$image" Backend/Analyzer
-          docker save "$image" | gzip -1 > "$asset"
-
-      - name: Upload Analyzer image
-        uses: actions/upload-artifact@v4
-        with:
-          name: release-image-analyzer-${{ needs.version.outputs.value }}
-          path: ${{ runner.temp }}/release-assets/*.tar.gz
-          if-no-files-found: error
-          retention-days: 1
+      - name: Log out of Docker Hub
+        if: always()
+        run: docker logout
 
   publish-release:
     name: Publish GitHub Release
     needs:
-      - version
+      - validate
       - build-frontend
       - build-duely
       - build-taski
@@ -250,25 +228,23 @@ jobs:
       contents: write
     env:
       GH_TOKEN: ${{ github.token }}
-      VERSION: ${{ needs.version.outputs.value }}
+      VERSION: ${{ needs.validate.outputs.version }}
+      TAG: ${{ needs.validate.outputs.tag }}
+      RELEASE_NOTES: |
+        Docker images:
+        - `divancode74/coduels-frontend:${{ needs.validate.outputs.version }}`
+        - `divancode74/coduels-duely:${{ needs.validate.outputs.version }}`
+        - `divancode74/coduels-duely-migration:${{ needs.validate.outputs.version }}`
+        - `divancode74/coduels-taski:${{ needs.validate.outputs.version }}`
+        - `divancode74/coduels-exesh:${{ needs.validate.outputs.version }}`
+        - `divancode74/coduels-exesh-dashboard:${{ needs.validate.outputs.version }}`
+        - `divancode74/coduels-analyzer:${{ needs.validate.outputs.version }}`
     steps:
-      - name: Download image archives
-        uses: actions/download-artifact@v4
-        with:
-          pattern: release-image-*-${{ needs.version.outputs.value }}
-          path: ${{ runner.temp }}/release-assets
-          merge-multiple: true
-
-      - name: Publish release
-        shell: bash
+      - name: Publish release and tag
         run: |
-          set -euo pipefail
-
-          cd "$RUNNER_TEMP/release-assets"
-          sha256sum ./*.tar.gz > SHA256SUMS
-          gh release create "v${VERSION}" ./*.tar.gz ./SHA256SUMS \
+          gh release create "$TAG" \
             --repo "$GITHUB_REPOSITORY" \
             --target "$GITHUB_SHA" \
             --title "CoDuels ${VERSION}" \
             --generate-notes \
-            --notes 'Each `.tar.gz` asset is a Docker image archive. Load one with `gzip -dc <asset>.tar.gz | docker load`.'
+            --notes "$RELEASE_NOTES"

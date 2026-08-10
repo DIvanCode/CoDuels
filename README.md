@@ -10,23 +10,17 @@ Develop application code through pull requests in the component repositories. Ba
 
 ## Release images
 
-The root repository packages the exact Backend and Frontend revisions tracked by a release commit. Change [`VERSION`](VERSION) to a new semantic version in a pull request. When that change reaches `master`, the `Release images` workflow creates a `v<version>` GitHub Release with these compressed Docker image archives and a `SHA256SUMS` file:
+The root repository releases the exact Backend and Frontend revisions tracked by `master`. Run the `Release images` workflow manually from the `master` branch and enter a semantic version such as `1.0.0`. The workflow passes that version to the existing Ansible build playbooks, pushes these images to Docker Hub, then creates the corresponding `v<version>` tag and GitHub Release:
 
-- `divancode74-coduels-frontend:<version>`
-- `divancode74-coduels-duely:<version>`
-- `divancode74-coduels-duely-migration:<version>`
-- `divancode74-coduels-taski:<version>`
-- `divancode74-coduels-exesh-coordinator:<version>`
-- `divancode74-coduels-exesh-worker:<version>`
-- `divancode74-coduels-analyzer:<version>`
+- `divancode74/coduels-frontend:<version>`
+- `divancode74/coduels-duely:<version>`
+- `divancode74/coduels-duely-migration:<version>`
+- `divancode74/coduels-taski:<version>`
+- `divancode74/coduels-exesh:<version>`
+- `divancode74/coduels-exesh-dashboard:<version>`
+- `divancode74/coduels-analyzer:<version>`
 
-Load an archive locally with:
-
-```bash
-gzip -dc divancode74-coduels-taski-1.0.0.tar.gz | docker load
-```
-
-The release workflow does not push the images to a registry or deploy them. The Frontend image uses the root repository variable `VITE_BASE_URL` when it is configured and defaults to `/api` otherwise.
+The workflow requires the root repository secret `DOCKER_PASSWORD`. It publishes images and release metadata but does not deploy any service. Frontend receives `VITE_BASE_URL` when its container starts, so the value is not embedded during the image build.
 
 Clone with submodules:
 
