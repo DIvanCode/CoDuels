@@ -1,0 +1,284 @@
+# Автономный single-host стек CoDuels v1.0.1.
+# Порты, связность сервисов и полная конфигурация БД заданы здесь.
+# Остальные изменяемые настройки и их описания находятся в файлах каталога ./env.
+#
+# ВАЖНО: значения паролей и JWT-секрета запускают стек «из коробки», но их нельзя
+# оставлять на сервере, доступном из интернета.
+# Нужно поменять все значения, указанные как CHANGE_ME
+
+services:
+  nginx:
+    image: nginx:1.29.2
+    container_name: nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      frontend:
+        condition: service_started
+      duely:
+        condition: service_started
+      taski:
+        condition: service_started
+      dashboard:
+        condition: service_started
+    networks:
+      - coduels
+
+  frontend:
+    image: divancode74/coduels-frontend:1.0.1
+    container_name: frontend
+    restart: unless-stopped
+    environment:
+      VITE_BASE_URL: /api
+    expose:
+      - "80"
+    networks:
+      - coduels
+
+  duely-postgres:
+    image: postgres:17.7
+    container_name: duely-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: duely
+      POSTGRES_USER: duely
+      POSTGRES_PASSWORD: CHANGE_ME
+    expose:
+      - "5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 10s
+    volumes:
+      - duely-postgres:/var/lib/postgresql/data
+    networks:
+      - coduels
+
+  duely-migration:
+    image: divancode74/coduels-duely-migration:1.0.1
+    container_name: duely-migration
+    restart: "no"
+    environment:
+      DbConnection__ConnectionString: "Server=duely-postgres:5432;Database=duely;Username=duely;Password=CHANGE_ME"
+    command: >-
+      bash -c '/root/.dotnet/tools/dotnet-ef database update
+      --connection "$$DbConnection__ConnectionString"
+      --startup-project /app/src/Duely
+      --project /app/src/Duely.Infrastructure.DataAccess.EntityFramework'
+    depends_on:
+      duely-postgres:
+        condition: service_healthy
+    networks:
+      - coduels
+
+  duely:
+    image: divancode74/coduels-duely:1.0.1
+    container_name: duely
+    restart: unless-stopped
+    env_file:
+      - ./env/duely.env
+    environment:
+      ASPNETCORE_URLS: "http://+:5001"
+      DbConnection__ConnectionString: "Server=duely-postgres:5432;Database=duely;Username=duely;Password=CHANGE_ME"
+      Taski__BaseUrl: http://taski:5252
+      Exesh__BaseUrl: http://coordinator:5253
+      Analyzer__BaseUrl: http://analyzer:8000
+    expose:
+      - "5001"
+    depends_on:
+      duely-migration:
+        condition: service_completed_successfully
+      taski:
+        condition: service_started
+      coordinator:
+        condition: service_started
+      analyzer:
+        condition: service_started
+    networks:
+      - coduels
+
+  taski-postgres:
+    image: postgres:17.7
+    container_name: taski-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: taski
+      POSTGRES_USER: taski
+      POSTGRES_PASSWORD: CHANGE_ME
+    expose:
+      - "5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 10s
+    volumes:
+      - taski-postgres:/var/lib/postgresql/data
+    networks:
+      - coduels
+
+  taski:
+    image: divancode74/coduels-taski:1.0.1
+    container_name: taski
+    restart: unless-stopped
+    env_file:
+      - ./env/taski.env
+    environment:
+      HTTP_SERVER_ADDR: 0.0.0.0:5252
+      HTTP_SERVER_METRICS_ADDR: 0.0.0.0:9090
+      DB_CONNECTION_STRING: "host=taski-postgres port=5432 database=taski user=taski password=CHANGE_ME"
+      EXECUTE_ENDPOINT: http://coordinator:5253
+      EXECUTE_DOWNLOAD_TASK_ENDPOINT: http://taski:5252
+      EVENT_CONSUMER_REST_ENDPOINT: http://coordinator:5253
+    expose:
+      - "5252"
+      - "9090"
+    volumes:
+      - taski-storage:/app/file_storage/storage
+    depends_on:
+      taski-postgres:
+        condition: service_healthy
+      coordinator:
+        condition: service_started
+    networks:
+      - coduels
+
+  exesh-postgres:
+    image: postgres:17.7
+    container_name: exesh-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: exesh
+      POSTGRES_USER: coordinator
+      POSTGRES_PASSWORD: CHANGE_ME
+    expose:
+      - "5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 10s
+    volumes:
+      - exesh-postgres:/var/lib/postgresql/data
+    networks:
+      - coduels
+
+  coordinator:
+    image: divancode74/coduels-exesh:1.0.1
+    container_name: exesh-coordinator
+    command: ["/app/bin/coordinator"]
+    restart: unless-stopped
+    env_file:
+      - ./env/exesh-coordinator.env
+    environment:
+      CONFIG_PATH: /app/config/coordinator.yml
+      HTTP_SERVER_ADDR: 0.0.0.0:5253
+      HTTP_SERVER_METRICS_ADDR: 0.0.0.0:9090
+      STORAGE_CONNECTION_STRING: "host=exesh-postgres port=5432 database=exesh user=coordinator password=CHANGE_ME"
+      JOB_FACTORY_FILESTORAGE_ENDPOINT: http://coordinator:5253
+    expose:
+      - "5253"
+      - "9090"
+    depends_on:
+      exesh-postgres:
+        condition: service_healthy
+    networks:
+      - coduels
+
+  worker-1:
+    image: divancode74/coduels-exesh:1.0.1
+    container_name: exesh-worker-1
+    command: ["/app/bin/worker"]
+    restart: unless-stopped
+    privileged: true # isolate требует привилегий ядра; используйте workers только на выделенной машине.
+    env_file:
+      - ./env/exesh-worker.env
+    environment:
+      CONFIG_PATH: /app/config/worker.yml
+      HTTP_SERVER_ADDR: 0.0.0.0:5254
+      HTTP_SERVER_METRICS_ADDR: 0.0.0.0:9091
+      WORKER_ID: http://worker-1:5254
+      WORKER_COORDINATOR_ENDPOINT: http://coordinator:5253
+    expose:
+      - "5254"
+      - "9091"
+    depends_on:
+      coordinator:
+        condition: service_started
+    networks:
+      - coduels
+
+  worker-2:
+    image: divancode74/coduels-exesh:1.0.1
+    container_name: exesh-worker-2
+    command: ["/app/bin/worker"]
+    restart: unless-stopped
+    privileged: true # isolate требует привилегий ядра; используйте workers только на выделенной машине.
+    env_file:
+      - ./env/exesh-worker.env
+    environment:
+      CONFIG_PATH: /app/config/worker.yml
+      HTTP_SERVER_ADDR: 0.0.0.0:5255
+      HTTP_SERVER_METRICS_ADDR: 0.0.0.0:9092
+      WORKER_ID: http://worker-2:5255
+      WORKER_COORDINATOR_ENDPOINT: http://coordinator:5253
+    expose:
+      - "5255"
+      - "9092"
+    depends_on:
+      coordinator:
+        condition: service_started
+    networks:
+      - coduels
+
+  dashboard:
+    image: divancode74/coduels-exesh-dashboard:1.0.1
+    container_name: exesh-dashboard
+    restart: unless-stopped
+    env_file:
+      - ./env/exesh-dashboard.env
+    environment:
+      EXESH_DASHBOARD_DB_CONNECTION_STRING: "host=exesh-postgres port=5432 database=exesh user=coordinator password=CHANGE_ME"
+    expose:
+      - "9000"
+    depends_on:
+      exesh-postgres:
+        condition: service_healthy
+    networks:
+      - coduels
+
+  analyzer:
+    image: divancode74/coduels-analyzer:1.0.1
+    container_name: analyzer
+    restart: unless-stopped
+    expose:
+      - "8000"
+    networks:
+      - coduels
+
+networks:
+  coduels:
+    name: coduels
+    driver: bridge
+
+volumes:
+  duely-postgres:
+    name: duely-postgres
+  taski-postgres:
+    name: taski-postgres
+  exesh-postgres:
+    name: exesh-postgres
+  taski-storage:
+    name: taski-storage
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /tasks/storage
