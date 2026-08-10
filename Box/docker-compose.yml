@@ -4,6 +4,7 @@
 #
 # ВАЖНО: значения паролей и JWT-секрета запускают стек «из коробки», но их нельзя
 # оставлять на сервере, доступном из интернета.
+# Нужно поменять все значения, указанные как CHANGE_ME
 
 services:
   nginx:
@@ -31,7 +32,7 @@ services:
     container_name: frontend
     restart: unless-stopped
     environment:
-      VITE_BASE_URL: http://nginx:80/api
+      VITE_BASE_URL: /api
     expose:
       - "80"
     networks:
@@ -44,7 +45,7 @@ services:
     environment:
       POSTGRES_DB: duely
       POSTGRES_USER: duely
-      POSTGRES_PASSWORD: coduels-change-me
+      POSTGRES_PASSWORD: CHANGE_ME
     expose:
       - "5432"
     healthcheck:
@@ -63,7 +64,7 @@ services:
     container_name: duely-migration
     restart: "no"
     environment:
-      DbConnection__ConnectionString: "Server=duely-postgres:5432;Database=duely;Username=duely;Password=coduels-change-me"
+      DbConnection__ConnectionString: "Server=duely-postgres:5432;Database=duely;Username=duely;Password=CHANGE_ME"
     command: >-
       bash -c '/root/.dotnet/tools/dotnet-ef database update
       --connection "$$DbConnection__ConnectionString"
@@ -83,7 +84,7 @@ services:
       - ./env/duely.env
     environment:
       ASPNETCORE_URLS: "http://+:5001"
-      DbConnection__ConnectionString: "Server=duely-postgres:5432;Database=duely;Username=duely;Password=coduels-change-me"
+      DbConnection__ConnectionString: "Server=duely-postgres:5432;Database=duely;Username=duely;Password=CHANGE_ME"
       Taski__BaseUrl: http://taski:5252
       Exesh__BaseUrl: http://coordinator:5253
       Analyzer__BaseUrl: http://analyzer:8000
@@ -108,7 +109,7 @@ services:
     environment:
       POSTGRES_DB: taski
       POSTGRES_USER: taski
-      POSTGRES_PASSWORD: coduels-change-me
+      POSTGRES_PASSWORD: CHANGE_ME
     expose:
       - "5432"
     healthcheck:
@@ -131,7 +132,7 @@ services:
     environment:
       HTTP_SERVER_ADDR: 0.0.0.0:5252
       HTTP_SERVER_METRICS_ADDR: 0.0.0.0:9090
-      DB_CONNECTION_STRING: "host=taski-postgres port=5432 database=taski user=taski password=coduels-change-me"
+      DB_CONNECTION_STRING: "host=taski-postgres port=5432 database=taski user=taski password=CHANGE_ME"
       EXECUTE_ENDPOINT: http://coordinator:5253
       EXECUTE_DOWNLOAD_TASK_ENDPOINT: http://taski:5252
       EVENT_CONSUMER_REST_ENDPOINT: http://coordinator:5253
@@ -155,7 +156,7 @@ services:
     environment:
       POSTGRES_DB: exesh
       POSTGRES_USER: coordinator
-      POSTGRES_PASSWORD: coduels-change-me
+      POSTGRES_PASSWORD: CHANGE_ME
     expose:
       - "5432"
     healthcheck:
@@ -180,7 +181,7 @@ services:
       CONFIG_PATH: /app/config/coordinator.yml
       HTTP_SERVER_ADDR: 0.0.0.0:5253
       HTTP_SERVER_METRICS_ADDR: 0.0.0.0:9090
-      STORAGE_CONNECTION_STRING: "host=exesh-postgres port=5432 database=exesh user=coordinator password=coduels-change-me"
+      STORAGE_CONNECTION_STRING: "host=exesh-postgres port=5432 database=exesh user=coordinator password=CHANGE_ME"
       JOB_FACTORY_FILESTORAGE_ENDPOINT: http://coordinator:5253
     expose:
       - "5253"
@@ -244,7 +245,7 @@ services:
     env_file:
       - ./env/exesh-dashboard.env
     environment:
-      EXESH_DASHBOARD_DB_CONNECTION_STRING: "host=exesh-postgres port=5432 database=exesh user=coordinator password=coduels-change-me"
+      EXESH_DASHBOARD_DB_CONNECTION_STRING: "host=exesh-postgres port=5432 database=exesh user=coordinator password=CHANGE_ME"
     expose:
       - "9000"
     depends_on:
@@ -269,9 +270,13 @@ networks:
 
 volumes:
   duely-postgres:
+    name: duely-postgres
   taski-postgres:
+    name: taski-postgres
   exesh-postgres:
+    name: exesh-postgres
   taski-storage:
+    name: taski-storage
     driver: local
     driver_opts:
       type: none
