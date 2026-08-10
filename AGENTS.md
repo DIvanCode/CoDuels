@@ -9,12 +9,13 @@
 
 ## Release ownership
 
-- The root `CoDuels` repository has no GitHub Actions workflows and advancing a root submodule pointer does not deploy anything.
+- The root `CoDuels` repository packages versioned Docker image archives in `release-images.yml` when `VERSION` changes on `master`. It publishes those archives to a GitHub Release but does not push them to a registry or deploy them. Advancing a root submodule pointer alone does not trigger the release or deploy anything.
 - Backend production delivery belongs to the path-filtered `duely_pull_request.yml`, `analyzer_pull_request.yml`, `alloy_pull_request.yml`, `nginx_pull_request.yml`, `taski_pull_request.yml`, and `exesh_pull_request.yml` workflows in `CoDuels-Backend`. Each component workflow validates its own component, then builds when applicable and deploys the pull-request revision. `e2e_tests_pull_request.yml` runs the Taski-Exesh scenario independently for Taski or Exesh changes; it is not a dependency of their build or deploy jobs.
 - Frontend production delivery belongs to `frontend_pull_request.yml` in `CoDuels-Frontend`. It validates and builds the pull-request revision, then deploys that image with the deploy playbook checked out from the trusted base revision.
 - Backend and Frontend pull-request jobs are skipped while a pull request is a Draft. After it is marked Ready for review, applicable validation, build, and production deployment jobs run automatically without a GitHub Environment approval. Pushes to either component repository's `master` branch do not deploy.
 - Task storage production delivery belongs to `tasks_push.yml` in `CoDuels-Tasks` and runs on pushes to its `master` branch.
 - Keep the required production secrets and variables in the repository that owns each workflow. Same-repository pull requests can use them; pull requests from forks do not receive Actions secrets.
+- Root release packaging requires no secrets. It uses the optional root `VITE_BASE_URL` variable for the Frontend image and defaults to `/api` when the variable is unset.
 
 ## GitHub issue workflow
 

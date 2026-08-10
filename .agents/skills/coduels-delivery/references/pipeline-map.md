@@ -5,12 +5,13 @@
 - [Repository model](#repository-model)
 - [Component validation](#component-validation)
 - [Component production delivery](#component-production-delivery)
+- [Root release packaging](#root-release-packaging)
 - [Ansible components](#ansible-components)
 - [GitHub configuration](#github-configuration)
 
 ## Repository model
 
-- Root `CoDuels` owns `Docs/`, shared agent instructions, and the Backend/Frontend submodule revisions tracked by the superproject. It has no GitHub Actions workflows and does not release components.
+- Root `CoDuels` owns `Docs/`, shared agent instructions, the Backend/Frontend submodule revisions tracked by the superproject, and release packaging. A change to its `VERSION` file on `master` builds versioned Docker archives from the pinned component revisions and publishes a GitHub Release. It does not push the images to a registry or deploy them.
 - `Backend` and `Frontend` are submodules with independent pull-request workflows that, for non-Draft pull requests, validate and then deploy the pull-request revision to production. Their jobs are skipped while the pull request is a Draft.
 - `Backend/Taski/tasks` is itself a project-owned submodule. Its task-storage deployment runs from that repository on pushes to `master`.
 - `Backend/filestorage` has its own pull-request Go test workflow and no production deployment workflow.
@@ -55,6 +56,12 @@ The production flows are:
 
 The root repository does not participate in production delivery. Advancing its Backend or Frontend gitlink only changes the revisions recorded by the superproject.
 
+## Root release packaging
+
+`release-images.yml` runs on pushes to `master` that change `VERSION`. It validates a new semantic version, builds the seven release images from the component revisions pinned by that root commit, uploads compressed Docker archives between jobs, and publishes them with checksums under the `v<version>` GitHub Release. Exesh Coordinator and Worker receive separate tags and archives from the same combined Exesh build. Analyzer models are trained before its image is built.
+
+Release image names use `divancode74-{service}:{version}` exactly as distributable local tags. The workflow does not log in to Docker Hub, push images, read deployment credentials, or run Ansible. The optional root `VITE_BASE_URL` variable configures the Frontend build and defaults to `/api`.
+
 ## Ansible components
 
 Build inventories use localhost and invoke Docker builds/pushes. Deployment playbooks target existing production inventory hosts and must run only from the owning repository workflow unless the user explicitly authorizes a manual deployment.
@@ -71,6 +78,7 @@ Configure values in the repository that owns each workflow; repository-scoped se
 - Backend secrets: `DOCKER_PASSWORD`, `SSH_PASSWORD`, and `VAULT_PASSWORD`.
 - Frontend secrets: `DOCKER_PASSWORD` and `SSH_PRIVATE_KEY`; Frontend variable: `VITE_BASE_URL`.
 - Tasks secret: `SSH_PASSWORD`.
+- Root release packaging has no required secrets. Its release job receives job-scoped `contents: write` permission, while all build jobs remain read-only. Root variable: optional `VITE_BASE_URL`.
 - Backend and Frontend branch protection should require the applicable pull-request checks. A same-repository pull request can receive Actions secrets and deploy; a fork pull request does not receive those secrets.
 - Root branch protection can still require pull requests for submodule-pointer and documentation changes, but merging root changes does not trigger deployment.
 
