@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+set -a && source .env && set +a
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 usage() {
@@ -51,19 +53,13 @@ if [[ ! -w "$TASKS_DIR" ]]; then
   exit 1
 fi
 
-exec 9>"$TASKS_DIR/.upload.lock"
-if ! flock -n 9; then
-  echo "another task upload is already running" >&2
-  exit 1
-fi
-
 docker compose \
   --project-directory "$SCRIPT_DIR" \
   -f "$SCRIPT_DIR/docker-compose.yml" \
+  --profile uploader \
   run --rm --no-deps \
-  --user "$(id -u):$(id -g)" \
   --volume "$ARCHIVE_PATH:/input/task.zip:ro" \
-  task-uploader \
+  uploader \
   -format polygon \
   -src /input/task.zip \
   -level "$LEVEL"
