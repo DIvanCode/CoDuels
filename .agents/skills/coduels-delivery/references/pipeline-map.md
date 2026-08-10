@@ -58,9 +58,9 @@ The root repository does not participate in production delivery. Advancing its B
 
 ## Root release packaging
 
-`release-images.yml` is started manually from `master` with a semantic version such as `1.0.0`. It rejects non-`master` runs and versions whose `v<version>` tag already exists. Its component jobs invoke the existing Ansible build playbooks, which build and push Frontend, Duely runtime and migration, Taski, the combined Exesh image and dashboard, and Analyzer. Analyzer models are trained before its playbook runs. After every image succeeds, the final job creates the tag and GitHub Release for the exact workflow revision.
+`release-images.yml` is started manually from `master` with a semantic version such as `1.0.0`. It rejects non-`master` runs and versions whose `v<version>` tag already exists. Its component jobs invoke the existing Ansible build playbooks, which build and push Frontend, Duely runtime and migration, Taski and its administrative task-uploader image, the combined Exesh image and dashboard, and Analyzer. Analyzer models are trained before its playbook runs. After every image succeeds, the final job packages `Box/` with the release version in `.env`, attaches that archive, and creates the tag and GitHub Release for the exact workflow revision.
 
-Release image names use `divancode74/coduels-{service}:{version}` on Docker Hub. The workflow requires the root `DOCKER_PASSWORD` secret, grants `contents: write` only to the final release job, and does not read deployment credentials or run deployment playbooks. Frontend receives `VITE_BASE_URL` when the container starts rather than during the build.
+Release image names use `divancode74/coduels-{service}:{version}` on Docker Hub; the administrative uploader is published as `divancode74/coduels-task-uploader:{version}`. The workflow requires the root `DOCKER_PASSWORD` secret, grants `contents: write` only to the final release job, and does not read deployment credentials or run deployment playbooks. Frontend receives `VITE_BASE_URL` when the container starts rather than during the build.
 
 ## Ansible components
 

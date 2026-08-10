@@ -115,7 +115,7 @@ jobs:
         run: docker logout
 
   build-taski:
-    name: Build and push Taski
+    name: Build and push Taski and task uploader
     needs: validate
     runs-on: ubuntu-latest
     env:
@@ -236,13 +236,33 @@ jobs:
         - `divancode74/coduels-duely:${{ needs.validate.outputs.version }}`
         - `divancode74/coduels-duely-migration:${{ needs.validate.outputs.version }}`
         - `divancode74/coduels-taski:${{ needs.validate.outputs.version }}`
+        - `divancode74/coduels-task-uploader:${{ needs.validate.outputs.version }}`
         - `divancode74/coduels-exesh:${{ needs.validate.outputs.version }}`
         - `divancode74/coduels-exesh-dashboard:${{ needs.validate.outputs.version }}`
         - `divancode74/coduels-analyzer:${{ needs.validate.outputs.version }}`
+
+        Box bundle:
+        - `coduels-box-${{ needs.validate.outputs.version }}.tar.gz`
     steps:
+      - name: Check out release revision
+        uses: actions/checkout@v4
+
+      - name: Build Box bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          artifact="coduels-box-${VERSION}.tar.gz"
+          staging="${RUNNER_TEMP}/coduels-box-${VERSION}"
+          mkdir -p "$staging"
+          cp -a Box/. "$staging/"
+          printf 'CODUELS_VERSION=%s\n' "$VERSION" > "$staging/.env"
+          tar -czf "$artifact" -C "$staging" .
+          echo "BOX_ARTIFACT=$artifact" >> "$GITHUB_ENV"
+
       - name: Publish release and tag
         run: |
-          gh release create "$TAG" \
+          gh release create "$TAG" "$BOX_ARTIFACT" \
             --repo "$GITHUB_REPOSITORY" \
             --target "$GITHUB_SHA" \
             --title "CoDuels ${VERSION}" \
