@@ -1,0 +1,250 @@
+name: Release images
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Semantic version without the v prefix, for example 1.0.0
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-images
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    name: Validate release
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.release.outputs.version }}
+      tag: ${{ steps.release.outputs.tag }}
+    steps:
+      - name: Check out release revision
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Validate branch, version, and tag
+        id: release
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ "$GITHUB_REF" != "refs/heads/master" ]]; then
+            echo "Run releases from the master branch" >&2
+            exit 1
+          fi
+
+          version="$INPUT_VERSION"
+          if [[ ! "$version" =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
+            echo "version must be a semantic version such as 1.0.0" >&2
+            exit 1
+          fi
+
+          tag="v${version}"
+          if git rev-parse --verify --quiet "refs/tags/${tag}^{commit}" >/dev/null; then
+            echo "Release tag ${tag} already exists" >&2
+            exit 1
+          fi
+
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
+  build-frontend:
+    name: Build and push Frontend
+    needs: validate
+    runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ needs.validate.outputs.version }}
+    steps:
+      - name: Check out release revision
+        uses: actions/checkout@v4
+
+      - name: Check out Frontend
+        run: git submodule update --init --depth 1 Frontend
+
+      - name: Install Ansible
+        run: python3 -m pip install ansible docker
+
+      - name: Log in to Docker Hub
+        env:
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: printf '%s' "$DOCKER_PASSWORD" | docker login -u divancode74 --password-stdin
+
+      - name: Run Frontend build playbook
+        working-directory: Frontend/ansible/build
+        run: ansible-playbook -i inventory playbook.yml --extra-vars="version=${VERSION}"
+
+      - name: Log out of Docker Hub
+        if: always()
+        run: docker logout
+
+  build-duely:
+    name: Build and push Duely
+    needs: validate
+    runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ needs.validate.outputs.version }}
+    steps:
+      - name: Check out release revision
+        uses: actions/checkout@v4
+
+      - name: Check out Backend
+        run: git submodule update --init --depth 1 Backend
+
+      - name: Install Ansible
+        run: python3 -m pip install ansible docker
+
+      - name: Log in to Docker Hub
+        env:
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: printf '%s' "$DOCKER_PASSWORD" | docker login -u divancode74 --password-stdin
+
+      - name: Run Duely build playbook
+        working-directory: Backend/Duely/ansible/build
+        run: ansible-playbook -i inventory playbook.yml --extra-vars="version=${VERSION}"
+
+      - name: Log out of Docker Hub
+        if: always()
+        run: docker logout
+
+  build-taski:
+    name: Build and push Taski
+    needs: validate
+    runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ needs.validate.outputs.version }}
+    steps:
+      - name: Check out release revision
+        uses: actions/checkout@v4
+
+      - name: Check out Backend
+        run: git submodule update --init --depth 1 Backend
+
+      - name: Install Ansible
+        run: python3 -m pip install ansible docker
+
+      - name: Log in to Docker Hub
+        env:
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: printf '%s' "$DOCKER_PASSWORD" | docker login -u divancode74 --password-stdin
+
+      - name: Run Taski build playbook
+        working-directory: Backend/Taski/ansible/build
+        run: ansible-playbook -i inventory playbook.yml --extra-vars="version=${VERSION}"
+
+      - name: Log out of Docker Hub
+        if: always()
+        run: docker logout
+
+  build-exesh:
+    name: Build and push Exesh
+    needs: validate
+    runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ needs.validate.outputs.version }}
+    steps:
+      - name: Check out release revision
+        uses: actions/checkout@v4
+
+      - name: Check out Backend and Exesh build dependencies
+        run: |
+          git submodule update --init --depth 1 Backend
+          git -C Backend submodule update --init --depth 1 Exesh/isolate Exesh/testlib
+
+      - name: Install Ansible
+        run: python3 -m pip install ansible docker
+
+      - name: Log in to Docker Hub
+        env:
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: printf '%s' "$DOCKER_PASSWORD" | docker login -u divancode74 --password-stdin
+
+      - name: Run Exesh build playbook
+        working-directory: Backend/Exesh/ansible/build
+        run: ansible-playbook -i inventory playbook.yml --extra-vars="version=${VERSION}"
+
+      - name: Log out of Docker Hub
+        if: always()
+        run: docker logout
+
+  build-analyzer:
+    name: Build and push Analyzer
+    needs: validate
+    runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ needs.validate.outputs.version }}
+    steps:
+      - name: Check out release revision
+        uses: actions/checkout@v4
+
+      - name: Check out Backend
+        run: git submodule update --init --depth 1 Backend
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: pip
+          cache-dependency-path: Backend/Analyzer/requirements.txt
+
+      - name: Install dependencies and train Analyzer models
+        working-directory: Backend/Analyzer
+        run: |
+          python -m pip install ansible docker
+          python -m pip install -r requirements.txt
+          python train.py --data-dir data/train
+
+      - name: Log in to Docker Hub
+        env:
+          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        run: printf '%s' "$DOCKER_PASSWORD" | docker login -u divancode74 --password-stdin
+
+      - name: Run Analyzer build playbook
+        working-directory: Backend/Analyzer/ansible/build
+        run: ansible-playbook -i inventory playbook.yml --extra-vars="version=${VERSION}"
+
+      - name: Log out of Docker Hub
+        if: always()
+        run: docker logout
+
+  publish-release:
+    name: Publish GitHub Release
+    needs:
+      - validate
+      - build-frontend
+      - build-duely
+      - build-taski
+      - build-exesh
+      - build-analyzer
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      VERSION: ${{ needs.validate.outputs.version }}
+      TAG: ${{ needs.validate.outputs.tag }}
+      RELEASE_NOTES: |
+        Docker images:
+        - `divancode74/coduels-frontend:${{ needs.validate.outputs.version }}`
+        - `divancode74/coduels-duely:${{ needs.validate.outputs.version }}`
+        - `divancode74/coduels-duely-migration:${{ needs.validate.outputs.version }}`
+        - `divancode74/coduels-taski:${{ needs.validate.outputs.version }}`
+        - `divancode74/coduels-exesh:${{ needs.validate.outputs.version }}`
+        - `divancode74/coduels-exesh-dashboard:${{ needs.validate.outputs.version }}`
+        - `divancode74/coduels-analyzer:${{ needs.validate.outputs.version }}`
+    steps:
+      - name: Publish release and tag
+        run: |
+          gh release create "$TAG" \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title "CoDuels ${VERSION}" \
+            --generate-notes \
+            --notes "$RELEASE_NOTES"
