@@ -189,7 +189,6 @@ services:
     privileged: true # isolate требует привилегий ядра; используйте workers только на выделенной машине.
     env_file:
       - ./env/exesh-worker.env
-      - ./env/exesh-worker-1.env
     environment:
       CONFIG_PATH: /app/config/worker.yml
       HTTP_SERVER_ADDR: 0.0.0.0:5254
@@ -212,7 +211,6 @@ services:
     privileged: true # isolate требует привилегий ядра; используйте workers только на выделенной машине.
     env_file:
       - ./env/exesh-worker.env
-      - ./env/exesh-worker-2.env
     environment:
       CONFIG_PATH: /app/config/worker.yml
       HTTP_SERVER_ADDR: 0.0.0.0:5255
