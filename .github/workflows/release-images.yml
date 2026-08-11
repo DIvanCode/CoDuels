@@ -242,7 +242,7 @@ jobs:
         - `divancode74/coduels-analyzer:${{ needs.validate.outputs.version }}`
 
         Box package:
-        - `coduels-box-${{ needs.validate.outputs.version }}.zip`
+        - `coduels-box.zip`
     steps:
       - name: Check out release revision
         uses: actions/checkout@v4

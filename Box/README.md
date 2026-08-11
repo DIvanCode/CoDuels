@@ -6,14 +6,14 @@
     - ubuntu >= 20.04
     - установлен docker
 
-1. Скачать пакет с box-конфигурацией (вместо ${CODUELS_VERSION} в двух местах указать версию релиза CoDuels):
+1. Скачать пакет с box-конфигурацией (вместо ${CODUELS_VERSION} требуется указать версию релиза CoDuels):
     ```bash
-    wget https://github.com/DIvanCode/CoDuels/releases/download/v${CODUELS_VERSION}/coduels-box-${CODUELS_VERSION}.zip
+    wget https://github.com/DIvanCode/CoDuels/releases/download/v${CODUELS_VERSION}/coduels-box.zip
     ```
 
 2. Разархивировать скачанный пакет с box-конфигурацией:
     ```bash
-    unzip coduels-box-${CODUELS_VERSION}.zip
+    unzip coduels-box.zip
     ```
 
 3. Перейти в директорию с box-конфигурацией.
@@ -67,8 +67,8 @@
 1. Перейти в директорию с box-конфигурацией.
 
 2. Запустить скрипт для загрузки задачи:
-    - <problem.zip> --- путь к пакету с задачей в формате polygon-linux.
-    - <level> --- оценка сложности задачи от $1$ до $10$ ($1$ --- простая, $10$ --- сложная).
+    - `<problem.zip>` --- путь к пакету с задачей в формате polygon-linux.
+    - `<level>` --- оценка сложности задачи от $1$ до $10$ ($1$ --- простая, $10$ --- сложная).
     ```bash
     bash upload-task.sh <problem.zip> <level>
     ```
