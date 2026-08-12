@@ -252,7 +252,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          archive="coduels-box-${VERSION}.zip"
+          archive="coduels-box.zip"
           cd Box
           zip -r "${GITHUB_WORKSPACE}/${archive}" .
           echo "BOX_ARCHIVE=${archive}" >> "$GITHUB_ENV"
