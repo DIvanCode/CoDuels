@@ -83,7 +83,7 @@ Supported solution languages in the current testing design are C++, Python, and 
 
 ### Edge and observability
 
-- Backend Nginx proxies `/api/users`, `/api/groups`, `/api/tournaments`, `/api/duels`, `/api/code-runs`, and `/api/actions` to Duely; `/api/task` to Taski; `/exesh-dashboard/` to the Django dashboard; and upgrades `/api/users/connect` to WebSocket.
+- Backend Nginx proxies `/api/users`, `/api/groups`, `/api/tournaments`, `/api/duels`, `/api/code-runs`, and `/api/actions` to Duely; `/api/task` to Taski; and upgrades `/api/users/connect` to WebSocket.
 - Grafana Alloy scrapes Duely, Taski, Coordinator, and Workers and ships metrics/logs to Grafana Cloud.
 
 ## Main flows

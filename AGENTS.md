@@ -44,7 +44,7 @@
 - `Backend/Exesh/`: Go 1.24. Coordinator schedules execution DAGs; workers execute jobs and exchange artifacts. Untrusted runs use Linux `isolate` inside privileged worker containers.
 - `Backend/Analyzer/`: Python/FastAPI/scikit-learn. Converts duel actions to an ordered feature vector and returns a suspicion score.
 - `Backend/filestorage/`: Go submodule for SHA-1-addressed bucket storage and tar-stream transfer.
-- `Backend/nginx/`: reverse proxy for Duely, Taski task files, WebSocket upgrades, and the Exesh dashboard.
+- `Backend/nginx/`: reverse proxy for Duely, Taski task files, and WebSocket upgrades.
 - `Backend/alloy/`: Grafana Alloy configuration for Prometheus remote write and Docker log shipping.
 - `Docs/`: Russian Markdown and LaTeX sources, architecture diagrams, slides, and thesis.
 
