@@ -17,7 +17,6 @@ The root repository releases the exact Backend and Frontend revisions tracked by
 - `divancode74/coduels-duely-migration:<version>`
 - `divancode74/coduels-taski:<version>`
 - `divancode74/coduels-exesh:<version>`
-- `divancode74/coduels-exesh-dashboard:<version>`
 - `divancode74/coduels-analyzer:<version>`
 
 The workflow requires the root repository secret `DOCKER_PASSWORD`. It publishes images and release metadata but does not deploy any service. Frontend receives `VITE_BASE_URL` when its container starts, so the value is not embedded during the image build.
