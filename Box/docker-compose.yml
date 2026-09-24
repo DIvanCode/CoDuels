@@ -14,8 +14,6 @@ services:
         condition: service_started
       taski:
         condition: service_started
-      dashboard:
-        condition: service_started
     networks:
       - coduels
 
@@ -237,22 +235,6 @@ services:
     depends_on:
       coordinator:
         condition: service_started
-    networks:
-      - coduels
-
-  dashboard:
-    image: divancode74/coduels-exesh-dashboard:${CODUELS_VERSION}
-    container_name: exesh-dashboard
-    restart: unless-stopped
-    env_file:
-      - ./config/exesh-dashboard.env
-    environment:
-      EXESH_DASHBOARD_DB_CONNECTION_STRING: "host=exesh-postgres port=5432 database=exesh user=coordinator password=${POSTGRES_PASSWORD}"
-    expose:
-      - "9000"
-    depends_on:
-      exesh-postgres:
-        condition: service_healthy
     networks:
       - coduels
 

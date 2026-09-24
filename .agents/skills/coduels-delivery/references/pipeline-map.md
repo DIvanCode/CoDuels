@@ -21,7 +21,7 @@
 ### Backend validation gates
 
 - `duely_pull_request.yml`: .NET 8 Release tests and PR coverage report for `Duely/**`, followed by the Duely build and deployment.
-- `exesh_pull_request.yml`: Go 1.24 tests plus a Django dashboard system check for `Exesh/**`, followed by the Exesh build and deployment.
+- `exesh_pull_request.yml`: Go 1.24 tests including schema cleanup against an isolated PostgreSQL service for `Exesh/**`, followed by the Exesh build and deployment.
 - `taski_pull_request.yml`: Go 1.24 tests for Taski application changes, excluding the nested tasks submodule, followed by the Taski build and deployment.
 - `e2e_tests_pull_request.yml`: an independent isolated Docker Compose Taski-Exesh A+B acceptance flow for `Taski/**` (excluding `Taski/tasks`), `Exesh/**`, the scenario itself, and the filestorage submodule pointer. It checks out recursive submodules, builds Exesh against that checked-out filestorage revision, and runs the same `e2e/taski-exesh/run.sh` entry point used locally. Its result is not listed in the Taski or Exesh build dependencies.
 - `analyzer_pull_request.yml`: Python 3.10 dependency install, syntax compilation, and baseline/production model training for `Analyzer/**`, followed by another production-model training pass, image build, and deployment.
@@ -47,7 +47,7 @@ Task storage is the exception: `tasks_push.yml` in `CoDuels-Tasks` deploys on ea
 The production flows are:
 
 - `Duely` -> build runtime and migration images, then run migration and deploy Duely.
-- `Exesh` -> build Exesh and dashboard images, then deploy Coordinator, Workers, and Dashboard.
+- `Exesh` -> build the Exesh image, then deploy Coordinator and Workers.
 - Taski application -> build/deploy Taski from a Backend pull request; task storage -> deploy from a Tasks `master` push.
 - `Analyzer` -> train models, build/push the image, then deploy it.
 - `nginx` -> upload configuration and recreate Nginx.
@@ -58,7 +58,7 @@ The root repository does not participate in production delivery. Advancing its B
 
 ## Root release packaging
 
-`release-images.yml` is started manually from `master` with a semantic version such as `1.0.0`. It rejects non-`master` runs and versions whose `v<version>` tag already exists. Its component jobs invoke the existing Ansible build playbooks, which build and push Frontend, Duely runtime and migration, Taski and its administrative task-uploader image, the combined Exesh image and dashboard, and Analyzer. Analyzer models are trained before its playbook runs. After every image succeeds, the final job packages `Box/` with the release version in `.env`, attaches that archive, and creates the tag and GitHub Release for the exact workflow revision.
+`release-images.yml` is started manually from `master` with a semantic version such as `1.0.0`. It rejects non-`master` runs and versions whose `v<version>` tag already exists. Its component jobs invoke the existing Ansible build playbooks, which build and push Frontend, Duely runtime and migration, Taski and its administrative task-uploader image, the combined Exesh image, and Analyzer. Analyzer models are trained before its playbook runs. After every image succeeds, the final job packages `Box/` with the release version in `.env`, attaches that archive, and creates the tag and GitHub Release for the exact workflow revision.
 
 Release image names use `divancode74/coduels-{service}:{version}` on Docker Hub; the administrative uploader is published as `divancode74/coduels-task-uploader:{version}`. The workflow requires the root `DOCKER_PASSWORD` secret, grants `contents: write` only to the final release job, and does not read deployment credentials or run deployment playbooks. Frontend receives `VITE_BASE_URL` when the container starts rather than during the build.
 
