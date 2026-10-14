@@ -1,0 +1,4 @@
+interface:
+  display_name: "Спецификация"
+  short_description: "Оформить задачу CoDuels по согласованной спецификации"
+  default_prompt: "Используй $specification, чтобы проработать требование CoDuels и создать задачу в GitHub."
